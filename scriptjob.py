@@ -26,14 +26,14 @@ if not os.path.exists(filenpa_scriptjob_json):
 scriptjob_conf=Json_config(filenpa_scriptjob_json)
 scriptjob_conf.data["filenpa_scriptjob_json"]=filenpa_scriptjob_json
 
-update_groups(scriptjob_conf) 
-# pprint(scriptjob_conf.data)
-# sys.exit()
-
 if __name__ == "__main__":
     conf=Json_config()
 
     args, this_help=ops.get_args(sys.argv, conf.data)
+    
+    if not args.help and not args.version:
+        update_groups(scriptjob_conf) 
+        sys.exit()
 
     if args.help:
         print(this_help)
@@ -108,17 +108,3 @@ if __name__ == "__main__":
         print(lspace+ft.bold("License: ")+conf.data["license"])
         print(lspace+ft.bold("Version: ")+conf.data["version"])
         sys.exit(0)
-
-
-# - add_group (last added group is main_group)
-# alt-a
-# - clear_group
-# alt-c
-# - switch_group (previous, next)
-# F1, MAJ-F1
-# - go_last_window
-# MAJ-F2
-# - window_switch (previous, next)
-# F3, MAJ-F3
-
-

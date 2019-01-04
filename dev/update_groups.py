@@ -130,5 +130,3 @@ def update_groups(scriptjob_conf):
         data["previous_window"]=active_window_hex_id
     
     scriptjob_conf.set_file_with_data()
-
-    sys.exit()
