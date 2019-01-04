@@ -6,8 +6,6 @@
 
 import os, sys
 from pprint import pprint
-from modules.notification.notification import set_notification
-import modules.message.message as msg
 from modules.guitools.guitools import Window, Windows, Regular_windows
 from modules.bwins.bwins import Path_dialog
 from modules.json_config.json_config import Json_config
@@ -246,8 +244,6 @@ def get_paths(app_data, window, group_name):
                     if paths == "_aborted":
                         message("warning", "Scriptjob save cancelled")
                         sys.exit(1)
-
-    
     return paths
 
 def get_window_obj(hex_id, win_id, group_name, app_data):

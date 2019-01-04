@@ -5,10 +5,9 @@
 # license: MIT
 
 import os, sys
-from modules.notification.notification import set_notification
-import modules.message.message as msg
 from modules.guitools.guitools import Windows, Window, Regular_windows
 from dev.set_previous import set_previous
+from dev.helpers import message
 
 def previous_window(scriptjob_conf, previous_type):
     data=scriptjob_conf.data
@@ -23,9 +22,7 @@ def previous_window(scriptjob_conf, previous_type):
         group_names=[group["name"] for group in data["groups"]]
 
         if not group_names:
-            msg_error="There is no group for previous_window"
-            set_notification(msg_error, "warning")
-            msg.warning(msg_error)
+            message("warning", "There is no group for previous_window")
             sys.exit(1)
 
         active_group_index=group_names.index(data["active_group"])

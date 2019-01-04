@@ -7,7 +7,6 @@
 import os, sys
 from pprint import pprint
 
-from modules.notification.notification import set_notification
 from modules.guitools.guitools import Windows, Window, Regular_windows
 from dev.set_previous import set_previous
 from dev.helpers import message

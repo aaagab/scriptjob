@@ -11,14 +11,12 @@ import time
 from tkinter import *
 
 from modules.bwins.bwins import Input_box, Radio_button_list
-from modules.notification.notification import set_notification
 from modules.guitools.guitools import Monitors, Windows, Regular_windows
 from modules.json_config.json_config import Json_config
-import modules.message.message as msg
 from dev.windows_list import Windows_list
 from dev.set_previous import set_previous
 from dev.actions import *
-import dev.helpers as hp
+from dev.helpers import generate_group_name, message
 import copy
 
 def get_selected_windows(discarded_windows):
@@ -34,8 +32,8 @@ def add_group(scriptjob_conf):
     data=scriptjob_conf.data
     start_hex_id=Windows.get_active_hex_id()
 
-    input_box=Input_box(dict(title=Json_config().data["app_name"], prompt_text="Input Group Name: ", default_text=hp.generate_group_name("scriptjob", scriptjob_conf)))
-    group_name=hp.generate_group_name(input_box.loop().output, scriptjob_conf)
+    input_box=Input_box(dict(title=Json_config().data["app_name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
+    group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
     
     if group_name == "_aborted":
         sys.exit()
@@ -54,12 +52,10 @@ def add_group(scriptjob_conf):
         windows_names=["{}: {}".format(window["exe_name"],window["name"])[:50] for window in selected_windows]
     
         if not windows_names:
-            msg_text="There is no windows to process"
             if obj_group["windows"]:            
-                msg_text="There is no more windows to process"
-            
-            set_notification(msg_text, "warning")
-            msg.warning(msg_text)
+                message("warning", "There is no more windows to process")
+            else:
+                message("warning", "There is no windows to process")
             break
     
         win_index=Windows_list(dict(
@@ -141,11 +137,8 @@ def add_group(scriptjob_conf):
     if "windows" in obj_group:
         if obj_group["windows"]:
             group_names=[group["name"] for group in data["groups"]]
-            if group_name in group_names:
-                group_index=group_names.index(group_name)
-                del data["groups"][group_index]
-
-            set_previous(scriptjob_conf, "active_group", start_hex_id)
+            if group_names:
+                set_previous(scriptjob_conf, "active_group", start_hex_id)
 
             Regular_windows.focus(obj_group["windows"][0]["hex_id"])
             obj_group["previous_window"]=obj_group["windows"][0]["hex_id"]
@@ -155,3 +148,4 @@ def add_group(scriptjob_conf):
             scriptjob_conf.set_file_with_data(data)
 
             set_previous(scriptjob_conf, "global", start_hex_id)
+            message("success", "scriptjob group '{}' added.".format(group_name))

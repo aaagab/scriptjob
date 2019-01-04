@@ -33,7 +33,6 @@ if __name__ == "__main__":
     
     if not args.help and not args.version:
         update_groups(scriptjob_conf) 
-        sys.exit()
 
     if args.help:
         print(this_help)
