@@ -2,16 +2,13 @@
     "app_name": "scriptjob",
     "author": "Gabriel Auger",
     "description": "options is a wrapper library for argparse. It allows to put all the options in a json file and choose arguments range",
-    "filen_scriptjob_json": "scriptjob.json",
     "direpa_actions": "/data/bin/scriptjob_actions",
-    "filen_actions_json": "actions.json",
-    "license": "MIT",
     "exes": [
         {
             "name": "dolphin",
-            "shared": true,
+            "new_tab": "app_parameters",
             "path_dialog": true,
-            "new_tab": "app_parameters"
+            "shared": true
         },
         {
             "name": "konsole",
@@ -19,28 +16,31 @@
         },
         {
             "name": "firefox",
-            "new_window": "--new-window '{PATH}'",
             "new_tab": "--new-tab '{PATH}'",
+            "new_window": "--new-window '{PATH}'",
             "shared": true
         },
         {
             "name": "chrome",
-            "new_window": "--new-window '{PATH}'",
             "new_tab": "--new-tab '{PATH}'",
+            "new_window": "--new-window '{PATH}'",
             "shared": true
         },
         {
             "name": "code",
-            "path_dialog": true,
+            "new_tab": "--add",
             "new_window": "--new-window '{PATH}'",
-            "new_tab": "--add"
+            "path_dialog": true
         },
         {
             "name": "kate",
-            "new_window": "--new '{PATH}'",
-            "new_tab": "--block '{PATH}'"
+            "new_tab": "--block '{PATH}'",
+            "new_window": "--new '{PATH}'"
         }
     ],
+    "filen_actions_json": "actions.json",
+    "filen_scriptjob_json": "scriptjob.json",
+    "license": "MIT",
     "options": [
         {
             "help": {
@@ -74,14 +74,14 @@
                     "--close"
                 ],
                 "info": "Close all windows from a group. However it keeps open the windows that are shared with other groups. Then it removes the group entry from the main scriptjob.json",
-                "required": false,
-                "show": true,
                 "nargs": [
                     0
                 ],
                 "params_required": [
                     "GROUP_NAME"
-                ]
+                ],
+                "required": false,
+                "show": true
             }
         },
         {
@@ -130,12 +130,12 @@
                     "--previous-window"
                 ],
                 "info": "Switch to the previous window, type can be 'global' for any window and 'active_group' for previous window of this active_group.",
-                "required": false,
-                "show": true,
                 "nargs": 1,
                 "params_required": [
                     "TYPE"
-                ]
+                ],
+                "required": false,
+                "show": true
             }
         },
         {
@@ -146,17 +146,17 @@
                     "--save"
                 ],
                 "info": "create a local scriptjob.json in current folder. This file is used with the 'open' parameters in order to quickly open a set of windows with predefined action. The 'TYPE' parameter can be 'all', 'groups'. 'all' save all the groups and 'groups' save all the name of the group_names that are listed after the parameter.",
-                "required": false,
-                "show": true,
                 "nargs": [
                     0
+                ],
+                "params_optional": [
+                    "GROUP_NAME(s)"
                 ],
                 "params_required": [
                     "TYPE"
                 ],
-                "params_optional": [
-                    "GROUP_NAME(s)"
-                ]
+                "required": false,
+                "show": true
             }
         },
         {
@@ -200,5 +200,5 @@
             }
         }
     ],
-    "version": "1.0.0-draft-1544978140"
+    "version": "1.0.0-beta-1546629922"
 }
