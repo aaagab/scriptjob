@@ -6,8 +6,12 @@
 
 import os, sys
 from pprint import pprint
-from modules.notification.notification import set_notification
-import modules.message.message as msg
+import re
+import subprocess
+import shlex
+import time
+import copy
+
 from modules.guitools.guitools import Window, Windows, Regular_windows, Monitors, Window_open
 from modules.bwins.bwins import Prompt_boolean
 from modules.json_config.json_config import Json_config
@@ -16,11 +20,6 @@ from dev.windows_list import Windows_list
 import dev.app_parameters as app_params
 from dev.helpers import message, generate_group_name
 from dev.set_previous import set_previous
-import re
-import subprocess
-import shlex
-import time
-import copy
 
 def has_prop(prop, obj):
     if prop in obj and obj[prop]:
@@ -101,8 +100,6 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         related_app_data=related_app_data[0] if related_app_data else {}
 
         if has_prop("shared", related_app_data):
-            # pprint(existing_related_windows)
-            # sys.exit()
             for hex_id in shared_windows_hex_ids:
                 existing_hex_ids=[win for win in existing_related_windows]
                 if hex_id in existing_hex_ids:
@@ -184,9 +181,9 @@ def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, sta
     set_previous(scriptjob_conf, "active_group", active_group["windows"][0]["hex_id"])
     set_previous(scriptjob_conf, "global", start_hex_id)
 
-    msg_txt="Scriptjob group(s) ['{}'] opened.".format("', '".join([group["name"] for group in data_open["groups"]]))
-    set_notification(msg_txt, "success")
-    msg.success(msg_txt)
+    message("success", "Scriptjob group(s) ['{}'] opened.".format(
+        "', '".join([group["name"] for group in data_open["groups"]])
+        ))
     
 def set_commands(window, shared_window, related_app_data):
     window["open_cmd"]=window["filenpa_exe"]
@@ -246,7 +243,6 @@ def launch_windows(windows_data):
             if cmd == "app_parameters":
                 app_params.set_cmds_after_open(window_data, window)
             else:
-                # pass
                 os.system(cmd)
 
         if window_data["hex_id"] == "create":

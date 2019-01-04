@@ -6,8 +6,6 @@
 
 import os, sys
 from pprint import pprint
-from modules.notification.notification import set_notification
-import modules.message.message as msg
 from modules.guitools.guitools import Window
 from dev.actions import Actions
 from dev.update_groups import update_groups
