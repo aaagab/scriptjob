@@ -1,0 +1,204 @@
+{
+    "app_name": "scriptjob",
+    "author": "Gabriel Auger",
+    "description": "options is a wrapper library for argparse. It allows to put all the options in a json file and choose arguments range",
+    "filen_scriptjob_json": "scriptjob.json",
+    "direpa_actions": "/data/bin/scriptjob_actions",
+    "filen_actions_json": "actions.json",
+    "license": "MIT",
+    "exes": [
+        {
+            "name": "dolphin",
+            "shared": true,
+            "path_dialog": true,
+            "new_tab": "app_parameters"
+        },
+        {
+            "name": "konsole",
+            "title": "-p tabtitle='{TITLE}'"
+        },
+        {
+            "name": "firefox",
+            "new_window": "--new-window '{PATH}'",
+            "new_tab": "--new-tab '{PATH}'",
+            "shared": true
+        },
+        {
+            "name": "chrome",
+            "new_window": "--new-window '{PATH}'",
+            "new_tab": "--new-tab '{PATH}'",
+            "shared": true
+        },
+        {
+            "name": "code",
+            "path_dialog": true,
+            "new_window": "--new-window '{PATH}'",
+            "new_tab": "--add"
+        },
+        {
+            "name": "kate",
+            "new_window": "--new '{PATH}'",
+            "new_tab": "--block '{PATH}'"
+        }
+    ],
+    "options": [
+        {
+            "help": {
+                "action": "store_true",
+                "args": [
+                    "-h",
+                    "--help"
+                ],
+                "info": "Show Help and exits.",
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "add_group": {
+                "action": "store_true",
+                "args": [
+                    "-a",
+                    "--add-group"
+                ],
+                "info": "Create a Group of windows.",
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "close": {
+                "action": "store_true",
+                "args": [
+                    "-c",
+                    "--close"
+                ],
+                "info": "Close all windows from a group. However it keeps open the windows that are shared with other groups. Then it removes the group entry from the main scriptjob.json",
+                "required": false,
+                "show": true,
+                "nargs": [
+                    0
+                ],
+                "params_required": [
+                    "GROUP_NAME"
+                ]
+            }
+        },
+        {
+            "switch_group": {
+                "action": "store_true",
+                "args": [
+                    "--sg",
+                    "--switch-group"
+                ],
+                "info": "Set the previous or next group as main group.",
+                "nargs": [
+                    0,
+                    2
+                ],
+                "params_optional": [
+                    "DIRECTION",
+                    "GROUP_NAME"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "open": {
+                "action": "store_true",
+                "args": [
+                    "-o",
+                    "--open"
+                ],
+                "info": "Recreate windows group(s) from a 'scriptjob_save.json' file. The first argument has to the json file path, then you can add any group names from this file in order to open them. If you don't choose a path the application searches for a scriptjob_save.json file on the current path. If you want to open one to multiple group names, the scriptjob_save.json file has to be given has first argument. No group names means open them all.",
+                "nargs": [
+                    0
+                ],
+                "params_optional": [
+                    "PATH"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "previous_window": {
+                "action": "store_true",
+                "args": [
+                    "-p",
+                    "--previous-window"
+                ],
+                "info": "Switch to the previous window, type can be 'global' for any window and 'active_group' for previous window of this active_group.",
+                "required": false,
+                "show": true,
+                "nargs": 1,
+                "params_required": [
+                    "TYPE"
+                ]
+            }
+        },
+        {
+            "save": {
+                "action": "store_true",
+                "args": [
+                    "-s",
+                    "--save"
+                ],
+                "info": "create a local scriptjob.json in current folder. This file is used with the 'open' parameters in order to quickly open a set of windows with predefined action. The 'TYPE' parameter can be 'all', 'groups'. 'all' save all the groups and 'groups' save all the name of the group_names that are listed after the parameter.",
+                "required": false,
+                "show": true,
+                "nargs": [
+                    0
+                ],
+                "params_required": [
+                    "TYPE"
+                ],
+                "params_optional": [
+                    "GROUP_NAME(s)"
+                ]
+            }
+        },
+        {
+            "switch_window": {
+                "action": "store_true",
+                "args": [
+                    "--sw",
+                    "--switch-window"
+                ],
+                "info": "Switch to the previous or next window from the main group. direction can be 'previous' or 'next'.",
+                "nargs": 1,
+                "params_optional": [
+                    "DIRECTION"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "execute": {
+                "action": "store_true",
+                "args": [
+                    "-e",
+                    "--execute"
+                ],
+                "info": "Execute action(s) set for the active window",
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "version": {
+                "action": "store_true",
+                "args": [
+                    "-v",
+                    "--version"
+                ],
+                "info": "Display Program Version.",
+                "required": false,
+                "show": true
+            }
+        }
+    ],
+    "version": "1.0.0-draft-1544978140"
+}
