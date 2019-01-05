@@ -80,6 +80,9 @@ class Actions(object):
                             return None
 
                     parameters.append(parameter_windows[win_index]["hex_id"])
+                else:
+                    parameters.append("")
+
 
         return parameters
 

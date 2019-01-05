@@ -47,3 +47,4 @@ def execute(scriptjob_conf):
 
     set_previous(scriptjob_conf, "active_group", start_hex_id)
     set_previous(scriptjob_conf, "global", start_hex_id)
+    # scriptjob_conf.set_file_with_data()

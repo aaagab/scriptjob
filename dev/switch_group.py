@@ -9,13 +9,13 @@ import os, sys
 from dev.windows_list import Windows_list
 from dev.set_previous import set_previous
 from dev.helpers import message
-from modules.guitools.guitools import Regular_windows, Windows
+from modules.guitools.guitools import Regular_windows, Windows, Monitors
 
 def switch_group(scriptjob_conf, action="", group_name=""):
     data=scriptjob_conf.data
-   
-    group_names=[group["name"] for group in data["groups"]]
 
+    group_names=[group["name"] for group in data["groups"]]
+    group_index=""
     if not group_names:
         message("warning", "There is no group to select")
         sys.exit(1)
@@ -23,14 +23,21 @@ def switch_group(scriptjob_conf, action="", group_name=""):
     active_group_index=group_names.index(data["active_group"])
     start_hex_id=Windows.get_active_hex_id()
 
+    active_monitor=Monitors().get_active()
+
     process_switch_group=False
     if not action:
         groups_previous_window_hex_ids=[group["previous_window"] for group in data["groups"]]
-        group_index=Windows_list(dict(
+        window_list=Windows_list(dict(
+            monitor=active_monitor,
             items=group_names, 
             prompt_text="Select a Group:", 
             checked=active_group_index,
-            title="ScriptJob"), groups_previous_window_hex_ids).loop().output
+            title="ScriptJob"), groups_previous_window_hex_ids)
+            
+        window_list.btn_done.pack_forget()
+        window_list.focus_buttons.remove(window_list.btn_done)
+        group_index=window_list.loop().output
 
         if group_index == "_aborted":
             message("warning", "Scriptjob switch_group cancelled.")
@@ -60,11 +67,14 @@ def switch_group(scriptjob_conf, action="", group_name=""):
 
     if data["active_group"] != group_names[group_index]:
         set_previous(scriptjob_conf, "active_group", start_hex_id)
+        # data["groups"]
 
         data["active_group"]=group_names[group_index]
         scriptjob_conf.set_file_with_data()
 
         set_previous(scriptjob_conf, "global", start_hex_id)
+
+        Regular_windows.focus(data["groups"][group_index]["previous_window"])
     else:
         active_group_hex_ids=[win["hex_id"] for win in data["groups"][active_group_index]["windows"]]
         if start_hex_id in active_group_hex_ids:
@@ -72,5 +82,7 @@ def switch_group(scriptjob_conf, action="", group_name=""):
         else:
             Regular_windows.focus(data["groups"][active_group_index]["previous_window"])
             set_previous(scriptjob_conf, "global", start_hex_id)
+
+    # scriptjob_conf.set_file_with_data()
 
     message("success", "Active_Group: {}".format(data["active_group"]))

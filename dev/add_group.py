@@ -31,8 +31,9 @@ def get_selected_windows(discarded_windows):
 def add_group(scriptjob_conf):
     data=scriptjob_conf.data
     start_hex_id=Windows.get_active_hex_id()
+    obj_monitor=Monitors().get_active()
 
-    input_box=Input_box(dict(title=Json_config().data["app_name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
+    input_box=Input_box(dict(monitor=obj_monitor, title=Json_config().data["app_name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
     group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
     
     if group_name == "_aborted":
@@ -40,7 +41,6 @@ def add_group(scriptjob_conf):
 
     obj_group=dict(name=group_name)
 
-    obj_monitor=Monitors().get_active()
 
     discarded_windows=[]
     actions=Actions()
@@ -145,7 +145,9 @@ def add_group(scriptjob_conf):
 
             data["groups"].append(obj_group)
             data["active_group"]=group_name
-            scriptjob_conf.set_file_with_data(data)
+            # scriptjob_conf.set_file_with_data(data)
 
             set_previous(scriptjob_conf, "global", start_hex_id)
             message("success", "scriptjob group '{}' added.".format(group_name))
+
+            # scriptjob_conf.set_file_with_data(data)

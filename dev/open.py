@@ -143,7 +143,7 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
             window["hex_id"]="create"
             set_commands(window, False, related_app_data)
 
-    windows_hex_ids=launch_windows(data_open["windows"])
+    windows_hex_ids=launch_windows(data_open["windows"], obj_monitor)
     insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id)
 
 def get_window_index(data_open, win_id):
@@ -173,13 +173,15 @@ def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, sta
     else:
         scriptjob_data["active_group"]=data_open["groups"][0]["name"]
 
-    scriptjob_conf.set_file_with_data()
+    # scriptjob_conf.set_file_with_data()
 
     active_group=[group for group in scriptjob_data["groups"] if group["name"] == scriptjob_data["active_group"]][0]
     Window(active_group["windows"][0]["hex_id"]).focus()
     
     set_previous(scriptjob_conf, "active_group", active_group["windows"][0]["hex_id"])
     set_previous(scriptjob_conf, "global", start_hex_id)
+
+    # scriptjob_conf.set_file_with_data()
 
     message("success", "Scriptjob group(s) ['{}'] opened.".format(
         "', '".join([group["name"] for group in data_open["groups"]])
@@ -220,14 +222,14 @@ def set_commands(window, shared_window, related_app_data):
         if has_prop("new_window", related_app_data):
             window["open_cmd"]+=" "+related_app_data["new_window"].replace(" '{PATH}'", "")
 
-def launch_windows(windows_data):
+def launch_windows(windows_data, obj_monitor):
     windows_hex_ids=[]
     for window_data in windows_data:
         window=""
         if window_data["hex_id"] == "create":
             launch_window=Window_open(window_data["open_cmd"])
             while not launch_window.has_window():
-                user_continue=Prompt_boolean(dict(title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(window_data["open_cmd"]))).loop().output
+                user_continue=Prompt_boolean(dict(monitor=obj_monitor, title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(window_data["open_cmd"]))).loop().output
                 if not user_continue:
                     message("Scriptjob command 'open' aborted.", "error")
                     sys.exit(1)

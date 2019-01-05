@@ -7,8 +7,7 @@
 import os, sys
 from pprint import pprint
 
-from modules.notification.notification import set_notification
-import modules.message.message as msg
+from dev.helpers import message
 from modules.guitools.guitools import Windows, Window, Regular_windows
 from dev.actions import Actions
 
@@ -50,10 +49,19 @@ def update_groups(scriptjob_conf):
                     windows_hex_ids_to_remove.append(window["hex_id"])
                     continue
                 else:
-                    
                     if not "name" in tmp_group:
+                        previous_window=""
+                        if "previous_window" in group:
+                            if Windows.exists(group["previous_window"]):
+                                previous_window=group["previous_window"]
+                            else:
+                                previous_window=tmp_group["windows"][0]["hex_id"]
+                        else:
+                            previous_window=tmp_group["windows"][0]["hex_id"]
+
                         tmp_group.update(
                             name=group["name"],
+                            previous_window=previous_window,
                             windows=[dict(
                                     hex_id=window["hex_id"],
                                     name=get_window_name(existing_windows, window["hex_id"]),
@@ -73,6 +81,10 @@ def update_groups(scriptjob_conf):
                 for a, action in enumerate(window["actions"]):
                     index_action=[act.name for act in obj_actions].index(action["name"])
                     current_action=obj_actions[index_action]
+                    tmp_group["windows"][-1]["actions"].append(dict(
+                        name=action["name"],
+                        parameters=[]
+                    ))
                     for p, parameter in enumerate(action["parameters"]):
                         if current_action.parameters[p]["type"] == "window_hex_id":
                             if parameter in windows_hex_ids_to_remove:
@@ -82,13 +94,9 @@ def update_groups(scriptjob_conf):
                                 continue
                             else:
                                 actions_win_hex_ids.add(parameter)
-                                if not tmp_group["windows"][-1]["actions"]:
-                                    tmp_group["windows"][-1]["actions"].append(dict(
-                                        name=action["name"],
-                                        parameters=[parameter]
-                                    ))
-                                else:
-                                    tmp_group["windows"][-1]["actions"][-1][parameters].append(parameter)
+                                tmp_group["windows"][-1]["actions"][-1]["parameters"].append(parameter)
+                        elif current_action.parameters[p]["type"] == "previous_window_hex_id":
+                            tmp_group["windows"][-1]["actions"][-1]["parameters"].append(tmp_group["previous_window"])
 
             if "windows" in tmp_group and tmp_group["windows"]:
                 tmp_group_hex_ids=[win["hex_id"] for win in tmp_group["windows"]]
@@ -101,12 +109,6 @@ def update_groups(scriptjob_conf):
                                     actions=[]
                                 )
                             )
-
-                if "previous_window" in tmp_group:
-                    if not Windows.exists(tmp_group["previous_window"]):
-                        tmp_group["previous_window"]=tmp_group["windows"][0]["hex_id"]
-                else:
-                    tmp_group["previous_window"]=tmp_group["windows"][0]["hex_id"]
                 
                 tmp_groups.append(tmp_group)
                 
@@ -130,3 +132,4 @@ def update_groups(scriptjob_conf):
         data["previous_window"]=active_window_hex_id
     
     scriptjob_conf.set_file_with_data()
+    

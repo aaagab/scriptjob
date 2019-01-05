@@ -6,12 +6,13 @@
 
 import os, sys
 from pprint import pprint
-from modules.guitools.guitools import Window, Windows, Regular_windows
+from modules.guitools.guitools import Window, Windows, Regular_windows, Monitors
 from modules.bwins.bwins import Path_dialog
 from modules.json_config.json_config import Json_config
 from dev.helpers import message
 from dev.custom_check_box_list import Custom_check_box_list
 from modules.bwins.bwins import Prompt_boolean, Path_dialog, Input_box
+from dev.actions import Actions
 
 from tkinter.filedialog import askopenfilename, askdirectory
 
@@ -61,6 +62,7 @@ class Custom_path_dialog(Path_dialog):
 
 def save(scriptjob_conf, dst_path="", selected_group_names=[]):
     direpa_current=os.getcwd()
+    active_monitor=Monitors().get_active()
         
     app_data=Json_config().data
     filen_scriptjob_json=app_data["filen_scriptjob_json"]
@@ -84,7 +86,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
                 filenpa_save_json=dst_path
     else:
         filenpa_default=os.path.join(direpa_current, filen_save_json)
-        path_dialog=Custom_path_dialog(dict(title="Scriptjob save", prompt_text="Select a path to save groups:"))
+        path_dialog=Custom_path_dialog(dict(monitor=active_monitor, title="Scriptjob save", prompt_text="Select a path to save groups:"))
         path_dialog.rad_file_dialog.configure(text="Select existing file")
         path_dialog.rad_none.configure(justify="left", anchor="w", text="Current path with defaut name\n{}".format(filenpa_default))
         
@@ -102,7 +104,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
                 filenpa_save_json=filenpa_default
             else:
                 if os.path.isdir(path_user):
-                    filen_user=Input_box(dict(title=Json_config().data["app_name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
+                    filen_user=Input_box(dict(monitor=active_monitor, title=Json_config().data["app_name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
                     filenpa_save_json=os.path.join(path_user, filen_user)
                 else:
                     filenpa_save_json=path_user
@@ -112,7 +114,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
         sys.exit(1)
     else:
         if os.path.exists(filenpa_save_json):
-            user_choice=Prompt_boolean(dict(title="Scriptjob save", prompt_text="Do you want to overwrite '{}'?".format(filenpa_save_json), YN="n")).loop().output
+            user_choice=Prompt_boolean(dict(monitor=active_monitor, title="Scriptjob save", prompt_text="Do you want to overwrite '{}'?".format(filenpa_save_json), YN="n")).loop().output
             if user_choice == "_aborted" or user_choice is False:
                 message("warning", "scriptjob 'save' cancelled")
                 sys.exit(1)
@@ -132,6 +134,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
 
     if not selected_group_names:
         options=dict(
+            monitor=active_monitor,
             items=group_names,
             values=group_names,
             prompt_text="Select Group(s) to save: ",
@@ -167,6 +170,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
     found_hex_ids=[]
     all_windows=Windows().sorted_by_class().filter_regular_type().windows
     all_windows_hex_ids=[window.hex_id for window in all_windows]
+    actions=Actions()
 
     for group in dict_groups:
         tmp_group={}
@@ -178,7 +182,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
             if not window["hex_id"] in found_hex_ids:
                 found_hex_ids.append(window["hex_id"])
                 win_id=get_win_id(window["hex_id"], len(found_hex_ids)-1)
-                data_save["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], app_data))
+                data_save["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], app_data, active_monitor))
             else: # if window already found ( in actions or other group )
                 win_id=get_win_id(window["hex_id"], found_hex_ids.index(window["hex_id"]))
                 # then add new group_name to this window
@@ -192,23 +196,27 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
             ))
 
             for action in window["actions"]:
+                selected_action_index=[act.name for act in actions.obj_actions].index(action["name"])
+                selected_action=actions.obj_actions[selected_action_index]
+
                 tmp_parameters=[]
-                for parameter in action["parameters"]:
-                    win_id=""
-                    if not parameter in found_hex_ids: # if window not already found
-                        if parameter in all_windows_hex_ids:
+                for p, parameter in enumerate(action["parameters"]):
+                    if selected_action.parameters[p]["type"] == "window_hex_id":
+                        if not parameter in found_hex_ids: # if window not already found
                             found_hex_ids.append(parameter)
                             win_id=get_win_id(parameter, len(found_hex_ids)-1)
-                            data_save["windows"].append(get_window_obj(parameter, win_id, group["name"], app_data))
+                            data_save["windows"].append(get_window_obj(parameter, win_id, group["name"], app_data, active_monitor))
                             tmp_parameters.append("win_id:"+str(win_id))
-                        else:
-                            tmp_parameters.append(parameter)
-                    else: # if window already found ( in actions or other group )
-                        win_id=get_win_id(parameter, found_hex_ids.index(parameter))
-                        tmp_parameters.append("win_id:"+str(win_id))
-                        already_found_window=[win for win in data_save["windows"]][found_hex_ids.index(parameter)]
-                        if group["name"] not in already_found_window["groups"]:
-                            already_found_window["groups"].append(group["name"])
+                        else: # if window already found ( in actions or other group )
+                            win_id=get_win_id(parameter, found_hex_ids.index(parameter))
+                            tmp_parameters.append("win_id:"+str(win_id))
+                            already_found_window=[win for win in data_save["windows"]][found_hex_ids.index(parameter)]
+                            if group["name"] not in already_found_window["groups"]:
+                                already_found_window["groups"].append(group["name"])
+                    elif selected_action.parameters[p]["type"] == "previous_window_hex_id":
+                        tmp_parameters.append("previous_window_hex_id")
+                    else:
+                        tmp_parameters.append(parameter)
 
                 tmp_group["windows"][-1]["actions"].append(dict(
                     name=action["name"],
@@ -230,7 +238,7 @@ def get_win_id(hex_id, index):
         index
     )
 
-def get_paths(app_data, window, group_name):
+def get_paths(app_data, window, group_name, active_monitor):
     paths=[]
     for exe in app_data["exes"]:
         if window.exe_name == exe["name"]:
@@ -239,14 +247,14 @@ def get_paths(app_data, window, group_name):
                     window.exe_name,
                     window.name
                 )
-                paths=Path_dialog(dict(title=group_name, prompt_text=prompt_text)).loop().output
+                paths=Path_dialog(dict(monitor=active_monitor, title=group_name, prompt_text=prompt_text)).loop().output
                 if not isinstance(paths, list):
                     if paths == "_aborted":
                         message("warning", "Scriptjob save cancelled")
                         sys.exit(1)
     return paths
 
-def get_window_obj(hex_id, win_id, group_name, app_data):
+def get_window_obj(hex_id, win_id, group_name, app_data, active_monitor):
     window=Window(hex_id)
 
     tmp_windows=dict(
@@ -256,7 +264,7 @@ def get_window_obj(hex_id, win_id, group_name, app_data):
         name=window.name,
         filenpa_exe=window.filenpa_exe,
         cmd_parameters=window.command.replace(window.filenpa_exe, "").strip(),
-        paths=get_paths(app_data, window, group_name),
+        paths=get_paths(app_data, window, group_name, active_monitor),
         groups=[group_name],
         tile=window.get_tile(),
         monitor=window.monitor.index

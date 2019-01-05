@@ -11,6 +11,7 @@ import tempfile
 from modules.json_config.json_config import Json_config
 from modules.guitools.guitools import Windows
 from dev.update_groups import update_groups
+from dev.helpers import message
 from pprint import pprint
 
 conf=Json_config().data
@@ -41,6 +42,7 @@ if __name__ == "__main__":
     if args.add_group:
         from dev.add_group import add_group
         add_group(scriptjob_conf)
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.close:
@@ -49,6 +51,7 @@ if __name__ == "__main__":
             close(scriptjob_conf)
         else:
             close(scriptjob_conf, list(args.close))
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.open:
@@ -61,6 +64,7 @@ if __name__ == "__main__":
             else:
                 open_json(scriptjob_conf, args.open[0] )
 
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.switch_group:
@@ -75,6 +79,7 @@ if __name__ == "__main__":
         from dev.previous_window import previous_window
 
         previous_window(scriptjob_conf, args.previous_window[0])
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.save:
@@ -86,17 +91,20 @@ if __name__ == "__main__":
         else:
             save(scriptjob_conf, args.save[0], args.save[1:])
         
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.switch_window:
         from dev.switch_window import switch_window
         switch_window(scriptjob_conf, args.switch_window[0])
 
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.execute:
         from dev.execute import execute
         execute(scriptjob_conf)
+        scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.version is True:
