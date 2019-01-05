@@ -6,7 +6,7 @@
 
 import os, sys
 from pprint import pprint
-from modules.guitools.guitools import Window
+from modules.guitools.guitools import Window, Monitors
 from dev.actions import Actions
 from dev.update_groups import update_groups
 from dev.helpers import message
@@ -16,7 +16,7 @@ from dev.custom_check_box_list import Custom_check_box_list
 def close(scriptjob_conf, to_close_group_names=[]):
 
     data=scriptjob_conf.data
-
+    obj_monitor=Monitors().get_active()
     existing_group_names=[group["name"] for group in data["groups"]]
 
     if not existing_group_names:
@@ -31,6 +31,7 @@ def close(scriptjob_conf, to_close_group_names=[]):
                 sys.exit(1)
     else:
         options=dict(
+            monitor=obj_monitor,
             items=existing_group_names,
             values=existing_group_names,
             prompt_text="Select Group(s) to close: ",

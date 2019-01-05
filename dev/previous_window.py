@@ -16,6 +16,7 @@ def previous_window(scriptjob_conf, previous_type):
         if data["previous_window"] != start_hex_id:
             Regular_windows.focus(data["previous_window"])
             set_previous(scriptjob_conf, "global", start_hex_id)
+            # scriptjob_conf.set_file_with_data()
         else:
             pass
     elif previous_type == "active_group":
@@ -33,6 +34,7 @@ def previous_window(scriptjob_conf, previous_type):
             if start_hex_id != active_group["previous_window"]:
                 Regular_windows.focus(active_group["previous_window"])
                 set_previous(scriptjob_conf, "active_group", start_hex_id)
+                # scriptjob_conf.set_file_with_data()
             else:
                 pass
         else:

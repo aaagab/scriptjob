@@ -42,8 +42,11 @@ def switch_window(scriptjob_conf, direction):
 
             Regular_windows.focus(selected_hex_id)
             set_previous(scriptjob_conf, "active_group", start_hex_id)
+            # scriptjob_conf.set_file_with_data()
         else:
             Regular_windows.focus(active_group["previous_window"])
+
+        set_previous(scriptjob_conf, "global", start_hex_id)
     else:
         message("error", "switch_window wrong entry '{}'".format(direction))
         sys.exit(1)

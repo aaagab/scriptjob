@@ -9,6 +9,7 @@ import modules.message.message as msg
 import sys, os
 
 def message(msg_type, text):
+
     if msg_type == "error":
         msg.user_error(text)
     elif msg_type == "app_error":
