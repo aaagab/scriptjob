@@ -42,6 +42,7 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         message("error", "open: '{}' not found.".format(filenpa_save_json), obj_monitor)
         sys.exit(1)
 
+    filenpa_save_json=os.path.abspath(filenpa_save_json)
     app_data=Json_config().data
     current_conf=Json_config()
     open_conf=Json_config(filenpa_save_json)
