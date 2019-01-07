@@ -7,7 +7,7 @@
 import os, sys
 from pprint import pprint
 from dev.actions import Actions
-from modules.guitools.guitools import Windows, Window, Regular_windows
+from modules.guitools.guitools import Windows, Window, Regular_windows, Monitors
 from modules.notification.notification import set_notification
 from dev.helpers import message
 from dev.set_previous import set_previous
@@ -16,9 +16,10 @@ def execute(scriptjob_conf):
     data=scriptjob_conf.data
 
     group_names=[group["name"] for group in data["groups"]]
+    obj_monitor=Monitors().get_active()
 
     if not group_names:
-        message("warning", "There is no group to select for execute")
+        message("warning", "There is no group to select for execute", obj_monitor)
         sys.exit(1)
 
     active_group_index=group_names.index(data["active_group"])
@@ -26,6 +27,7 @@ def execute(scriptjob_conf):
 
     obj_actions=Actions().obj_actions
     start_hex_id=Windows.get_active_hex_id()
+
 
     active_group_wins_hex_id=[window["hex_id"] for window in active_group["windows"]]
     if start_hex_id in active_group_wins_hex_id:

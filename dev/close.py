@@ -20,14 +20,14 @@ def close(scriptjob_conf, to_close_group_names=[]):
     existing_group_names=[group["name"] for group in data["groups"]]
 
     if not existing_group_names:
-        message("warning", "There is no group to close")
+        message("warning", "There is no group to close", obj_monitor)
         sys.exit(1)
 
     if to_close_group_names:
         to_close_group_names=set(to_close_group_names)
         for to_close_group_name in to_close_group_names:
             if not to_close_group_name in existing_group_names:
-                message("warning", "There is no group with name '{}' to close".format(to_close_group_name))
+                message("warning", "There is no group with name '{}' to close".format(to_close_group_name), obj_monitor)
                 sys.exit(1)
     else:
         options=dict(
@@ -43,11 +43,11 @@ def close(scriptjob_conf, to_close_group_names=[]):
 
         if not isinstance(to_close_group_names, list):
             if to_close_group_names == "_aborted":
-                message("warning", "Scriptjob close cancelled")
+                message("warning", "Scriptjob close cancelled", obj_monitor)
                 sys.exit(1)
         
         if not to_close_group_names:
-            message("warning", "Scriptjob close cancelled")
+            message("warning", "Scriptjob close cancelled", obj_monitor)
             sys.exit(1)
 
     obj_actions=Actions().obj_actions
@@ -83,4 +83,4 @@ def close(scriptjob_conf, to_close_group_names=[]):
 
     update_groups(scriptjob_conf)
     
-    message("success", "Scriptjob group(s) ['{}'] closed.".format("', '".join(to_close_group_names)))
+    message("success", "Scriptjob group(s) ['{}'] closed.".format("', '".join(to_close_group_names)), obj_monitor)

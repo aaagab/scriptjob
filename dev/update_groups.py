@@ -55,9 +55,9 @@ def update_groups(scriptjob_conf):
                             if Windows.exists(group["previous_window"]):
                                 previous_window=group["previous_window"]
                             else:
-                                previous_window=tmp_group["windows"][0]["hex_id"]
+                                previous_window=group["windows"][0]["hex_id"]
                         else:
-                            previous_window=tmp_group["windows"][0]["hex_id"]
+                            previous_window=group["windows"][0]["hex_id"]
 
                         tmp_group.update(
                             name=group["name"],
@@ -86,7 +86,7 @@ def update_groups(scriptjob_conf):
                         parameters=[]
                     ))
                     for p, parameter in enumerate(action["parameters"]):
-                        if current_action.parameters[p]["type"] == "window_hex_id":
+                        if current_action.parameters[p]["type"] in ["window_hex_id", "active_window"]:
                             if parameter in windows_hex_ids_to_remove:
                                 continue
                             elif not Windows.exists(parameter):
@@ -132,4 +132,3 @@ def update_groups(scriptjob_conf):
         data["previous_window"]=active_window_hex_id
     
     scriptjob_conf.set_file_with_data()
-    
