@@ -7,17 +7,18 @@
 import os, sys
 from pprint import pprint
 
-from modules.guitools.guitools import Windows, Window, Regular_windows
+from modules.guitools.guitools import Windows, Window, Regular_windows, Monitors
 from dev.set_previous import set_previous
 from dev.helpers import message
 
 def switch_window(scriptjob_conf, direction):
     data=scriptjob_conf.data
+    obj_monitor=Monitors().get_active()
 
     group_names=[group["name"] for group in data["groups"]]
 
     if not group_names:
-        message("warning", "There is no group to select")
+        message("warning", "There is no group to select", obj_monitor)
         sys.exit(1)
     
     if direction in ["previous", "next"]:
@@ -48,5 +49,5 @@ def switch_window(scriptjob_conf, direction):
 
         set_previous(scriptjob_conf, "global", start_hex_id)
     else:
-        message("error", "switch_window wrong entry '{}'".format(direction))
+        message("error", "switch_window wrong entry '{}'".format(direction), obj_monitor)
         sys.exit(1)

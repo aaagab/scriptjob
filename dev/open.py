@@ -35,8 +35,11 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         filen_save_json="{}_save{}".format(name, ext)
         filenpa_save_json=os.path.join(direpa_current, filen_save_json)
     
+    obj_monitor=Monitors().get_active()
+
+
     if not os.path.exists(filenpa_save_json):
-        message("error", "open: '{}' not found.".format(filenpa_save_json))
+        message("error", "open: '{}' not found.".format(filenpa_save_json), obj_monitor)
         sys.exit(1)
 
     app_data=Json_config().data
@@ -46,17 +49,17 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
     start_hex_id=Windows.get_active_hex_id()
 
     if not has_prop("windows", data_open):
-        message("error", "open: no windows in '{}'.".format(filenpa_save_json))
+        message("error", "open: no windows in '{}'.".format(filenpa_save_json), obj_monitor)
         sys.exit(1)
 
     if not has_prop("groups", data_open):
-        message("error", "open: no groups in '{}'.".format(filenpa_save_json))
+        message("error", "open: no groups in '{}'.".format(filenpa_save_json), obj_monitor)
         sys.exit(1)
 
     in_file_group_names=[group["name"] for group in data_open["groups"]]
 
     if not in_file_group_names:
-        message("error", "There is no group to open")
+        message("error", "There is no group to open", obj_monitor)
         sys.exit(1)
 
     if group_names:
@@ -65,7 +68,7 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         group_names=set(group_names)
         for group_name in group_names:
             if not group_name in in_file_group_names:
-                message("error", "There is no group with name '{}' to open".format(group_name))
+                message("error", "There is no group with name '{}' to open".format(group_name), obj_monitor)
                 sys.exit(1)
 
         for group in data_open["groups"]:
@@ -89,7 +92,6 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         data_open["windows"]=tmp_windows
 
     shared_windows_hex_ids=[]
-    obj_monitor=Monitors().get_active()
     existing_windows=Regular_windows()
 
     for window in data_open["windows"]:
@@ -144,14 +146,14 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
             set_commands(window, False, related_app_data)
 
     windows_hex_ids=launch_windows(data_open["windows"], obj_monitor)
-    insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id)
+    insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor)
 
 def get_window_index(data_open, win_id):
     for w, window in enumerate(data_open["windows"]):
         if window["id"] == win_id:
             return w
 
-def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id):
+def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor):
     scriptjob_data=scriptjob_conf.data
     for group in data_open["groups"]:
         group["name"]=generate_group_name(group["name"], scriptjob_conf)
@@ -183,9 +185,11 @@ def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, sta
 
     # scriptjob_conf.set_file_with_data()
 
-    message("success", "Scriptjob group(s) ['{}'] opened.".format(
-        "', '".join([group["name"] for group in data_open["groups"]])
-        ))
+    message(
+        "success", 
+        "Scriptjob group(s) ['{}'] opened.".format("', '".join([group["name"] for group in data_open["groups"]])
+        ),
+        obj_monitor)
     
 def set_commands(window, shared_window, related_app_data):
     window["open_cmd"]=window["filenpa_exe"]
@@ -231,7 +235,7 @@ def launch_windows(windows_data, obj_monitor):
             while not launch_window.has_window():
                 user_continue=Prompt_boolean(dict(monitor=obj_monitor, title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(window_data["open_cmd"]))).loop().output
                 if not user_continue:
-                    message("Scriptjob command 'open' aborted.", "error")
+                    message("Scriptjob command 'open' aborted.", "error", obj_monitor)
                     sys.exit(1)
             
             window=launch_window.window

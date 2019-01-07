@@ -5,11 +5,12 @@
 # license: MIT
 
 import os, sys
-from modules.guitools.guitools import Windows, Window, Regular_windows
+from modules.guitools.guitools import Windows, Window, Regular_windows, Monitors
 from dev.set_previous import set_previous
 from dev.helpers import message
 
 def previous_window(scriptjob_conf, previous_type):
+    obj_monitor=Monitors().get_active()
     data=scriptjob_conf.data
     start_hex_id=Windows.get_active_hex_id()
     if previous_type == "global":
@@ -23,7 +24,7 @@ def previous_window(scriptjob_conf, previous_type):
         group_names=[group["name"] for group in data["groups"]]
 
         if not group_names:
-            message("warning", "There is no group for previous_window")
+            message("warning", "There is no group for previous_window", obj_monitor)
             sys.exit(1)
 
         active_group_index=group_names.index(data["active_group"])

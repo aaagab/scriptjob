@@ -8,7 +8,7 @@ from modules.notification.notification import set_notification
 import modules.message.message as msg
 import sys, os
 
-def message(msg_type, text):
+def message(msg_type, text, obj_monitor):
 
     if msg_type == "error":
         msg.user_error(text)
@@ -21,7 +21,7 @@ def message(msg_type, text):
     elif msg_type == "success":
         msg.success(text)
     
-    set_notification(text, msg_type)
+    set_notification(text, msg_type, obj_monitor)
 
 def generate_group_name(group_name, scriptjob_conf):
     existing_group_names=[group["name"] for group in scriptjob_conf.data["groups"]]

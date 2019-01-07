@@ -37,7 +37,8 @@ def add_group(scriptjob_conf):
     group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
     
     if group_name == "_aborted":
-        sys.exit()
+        message("warning", "Scriptjob 'add' cancelled", obj_monitor)
+        sys.exit(1)
 
     obj_group=dict(name=group_name)
 
@@ -53,9 +54,9 @@ def add_group(scriptjob_conf):
     
         if not windows_names:
             if obj_group["windows"]:            
-                message("warning", "There is no more windows to process")
+                message("warning", "There is no more windows to process", obj_monitor)
             else:
-                message("warning", "There is no windows to process")
+                message("warning", "There is no windows to process", obj_monitor)
             break
     
         win_index=Windows_list(dict(
@@ -66,7 +67,8 @@ def add_group(scriptjob_conf):
             title="Group: {}".format(group_name)), selected_windows_hex_ids).loop().output
 
         if win_index == "_aborted":
-            sys.exit()
+            message("warning", "Scriptjob 'add' cancelled", obj_monitor)
+            sys.exit(1)
 
         if win_index == "_done":
             break
@@ -117,7 +119,7 @@ def add_group(scriptjob_conf):
 
             selected_obj_action=actions.obj_actions[action_index]
 
-            parameters=actions.implement(selected_obj_action, obj_monitor, group_name)
+            parameters=actions.implement(selected_obj_action, obj_monitor, group_name, selected_window["hex_id"])
             if parameters is None:
                 continue
             
@@ -148,6 +150,6 @@ def add_group(scriptjob_conf):
             # scriptjob_conf.set_file_with_data(data)
 
             set_previous(scriptjob_conf, "global", start_hex_id)
-            message("success", "scriptjob group '{}' added.".format(group_name))
+            message("success", "scriptjob group '{}' added.".format(group_name), obj_monitor)
 
             # scriptjob_conf.set_file_with_data(data)

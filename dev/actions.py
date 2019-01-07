@@ -45,12 +45,7 @@ class Actions(object):
                 if path_elem != self.filenpa_actions_json:
                     self.set_action(elem, path_elem)
 
-        # self.set_action("execute_terminal", "Execute Terminal", ["window_hex_id"])
-        # self.set_action("refresh_browser", "Refresh Browser", ["window_hex_id"])
-        # self.set_action("return_group_previous_window", "Return Previous Window From Group")
-        # self.set_action("return_global_previous_window", "Return Previous Window From Global")
-
-    def implement(self, obj_action, obj_monitor, group_name):
+    def implement(self, obj_action, obj_monitor, group_name, selected_window_hex_id):
 
         parameters=[]
 
@@ -62,7 +57,7 @@ class Actions(object):
             if parameter_windows:
                 windows_names=["{}: {}".format(window["exe_name"],window["name"])[:50] for window in parameter_windows]
 
-        
+                print(parameter["type"])
                 if parameter["type"] == "window_hex_id":
                     while win_index == "":
                         win_list=Windows_list(dict(
@@ -80,9 +75,10 @@ class Actions(object):
                             return None
 
                     parameters.append(parameter_windows[win_index]["hex_id"])
-                else:
+                elif parameter["type"] == "active_window":
+                    parameters.append(selected_window_hex_id)
+                elif parameter["type"] == "previous_window_hex_id":
                     parameters.append("")
-
 
         return parameters
 

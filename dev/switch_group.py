@@ -13,17 +13,17 @@ from modules.guitools.guitools import Regular_windows, Windows, Monitors
 
 def switch_group(scriptjob_conf, action="", group_name=""):
     data=scriptjob_conf.data
+    active_monitor=Monitors().get_active()
 
     group_names=[group["name"] for group in data["groups"]]
     group_index=""
     if not group_names:
-        message("warning", "There is no group to select")
+        message("warning", "There is no group to select", active_monitor)
         sys.exit(1)
     
     active_group_index=group_names.index(data["active_group"])
     start_hex_id=Windows.get_active_hex_id()
 
-    active_monitor=Monitors().get_active()
 
     process_switch_group=False
     if not action:
@@ -40,7 +40,7 @@ def switch_group(scriptjob_conf, action="", group_name=""):
         group_index=window_list.loop().output
 
         if group_index == "_aborted":
-            message("warning", "Scriptjob switch_group cancelled.")
+            message("warning", "Scriptjob switch_group cancelled.", active_monitor)
             sys.exit(1)
     
     else:
@@ -56,13 +56,13 @@ def switch_group(scriptjob_conf, action="", group_name=""):
                 group_index=active_group_index-1
         elif action == "group":
             if not group_name:
-                message("error", "Group Name needs to be given when group is selected.")
+                message("error", "Group Name needs to be given when group is selected.", active_monitor)
                 sys.exit(1)
 
             group_index=group_names.index(group_name)
         else:
             if not group_name:
-                message("error", "Unknow action '{}'".format(action))
+                message("error", "Unknow action '{}'".format(action), active_monitor)
                 sys.exit(1)
 
     if data["active_group"] != group_names[group_index]:
@@ -85,4 +85,4 @@ def switch_group(scriptjob_conf, action="", group_name=""):
 
     # scriptjob_conf.set_file_with_data()
 
-    message("success", "Active_Group: {}".format(data["active_group"]))
+    message("success", "Active_Group: {}".format(data["active_group"]), active_monitor)

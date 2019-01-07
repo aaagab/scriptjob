@@ -5,6 +5,9 @@
 # license: MIT
 
 import os, sys
+import configparser
+import contextlib
+
 from pprint import pprint
 from modules.guitools.guitools import Window, Windows, Regular_windows, Monitors
 from modules.bwins.bwins import Path_dialog
@@ -80,7 +83,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
         else:
             direpa_dst=os.path.dirname(dst_path)
             if not os.path.exists(direpa_dst):
-                message("error", "dst_path folder '{}' does not exist".format(direpa_dst))
+                message("error", "dst_path folder '{}' does not exist".format(direpa_dst), active_monitor)
                 sys.exit(1)
             else:
                 filenpa_save_json=dst_path
@@ -92,11 +95,11 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
         
         user_path=path_dialog.loop().output
         if not user_path:
-            message("warning", "scriptjob 'save' cancelled")
+            message("warning", "scriptjob 'save' cancelled", active_monitor)
             sys.exit(1)
         else:
             if user_path == "_aborted":
-                message("warning", "scriptjob 'save' cancelled")
+                message("warning", "scriptjob 'save' cancelled", active_monitor)
                 sys.exit(1)
 
             path_user=user_path[0]
@@ -109,18 +112,31 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
                 else:
                     filenpa_save_json=path_user
 
+    filenpa_symlink=os.path.abspath(filenpa_save_json)
+    filenpa_save_json=get_new_filenpa_save_json_if_symlink(filenpa_save_json)
+
     if os.path.isdir(filenpa_save_json):
-        message("error", "save filename '{}' is a directory".format(filenpa_save_json))
+        message("error", "save filename '{}' is a directory".format(filenpa_save_json), active_monitor)
         sys.exit(1)
     else:
         if os.path.exists(filenpa_save_json):
             user_choice=Prompt_boolean(dict(monitor=active_monitor, title="Scriptjob save", prompt_text="Do you want to overwrite '{}'?".format(filenpa_save_json), YN="n")).loop().output
             if user_choice == "_aborted" or user_choice is False:
-                message("warning", "scriptjob 'save' cancelled")
+                message("warning", "scriptjob 'save' cancelled", active_monitor)
                 sys.exit(1)
 
     with open(filenpa_save_json, "w") as f:
         f.write("{}")
+    
+
+    if filenpa_symlink != filenpa_save_json:
+        with contextlib.suppress(FileNotFoundError):
+            os.remove(filenpa_symlink)
+
+        os.symlink(
+            filenpa_save_json,
+            filenpa_symlink
+        )
 
     data=scriptjob_conf.data
     dict_groups=[]
@@ -129,7 +145,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
     groups_first_window_hex_ids=[group["windows"][0]["hex_id"] for group in data["groups"]]
 
     if not group_names:
-        message("warning", "There is no group to save")
+        message("warning", "There is no group to save", active_monitor)
         sys.exit(1)
 
     if not selected_group_names:
@@ -145,21 +161,23 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
 
         if not isinstance(selected_group_names, list):
             if selected_group_names == "_aborted":
-                message("warning", "Scriptjob save cancelled")
+                message("warning", "Scriptjob save cancelled", active_monitor)
                 sys.exit(1)
         
         if not selected_group_names:
-            message("warning", "Scriptjob save cancelled")
+            message("warning", "Scriptjob save cancelled", active_monitor)
             sys.exit(1)
 
     for group_name in selected_group_names:
         if not group_name in group_names:
-            message("warning","There is no group with name '{}' to save".format(group_name))
+            message("warning","There is no group with name '{}' to save".format(group_name), active_monitor)
             sys.exit(1)
         
         selected_group_index=group_names.index(group_name)
         dict_groups.append(data["groups"][selected_group_index])
 
+   
+    
     save_conf=Json_config(filenpa_save_json)
     data_save=save_conf.data
     data_save["groups"]=[]
@@ -201,7 +219,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
 
                 tmp_parameters=[]
                 for p, parameter in enumerate(action["parameters"]):
-                    if selected_action.parameters[p]["type"] == "window_hex_id":
+                    if selected_action.parameters[p]["type"] in ["window_hex_id", "active_window"]:
                         if not parameter in found_hex_ids: # if window not already found
                             found_hex_ids.append(parameter)
                             win_id=get_win_id(parameter, len(found_hex_ids)-1)
@@ -230,7 +248,28 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
     message("success", "Scriptjob saved '[{}]' to '{}'".format(
         ", ".join(selected_group_names),
         filenpa_save_json
-        ))
+        ), active_monitor)
+
+def get_new_filenpa_save_json_if_symlink(filenpa_save_json):
+    direpa_save_json=os.path.abspath(os.path.dirname(filenpa_save_json))
+    filen_save_json=os.path.basename(filenpa_save_json)
+    direpa_src=os.path.join(direpa_save_json, "src")
+    filenpa_git_config=os.path.join(direpa_src, ".git", "config")
+    direpa_git_user=""
+    if os.path.exists(filenpa_git_config):
+        config=configparser.ConfigParser()
+        config.read(filenpa_git_config)
+        if "user" in config.sections():
+            if "name" in [key for key in config["user"]]:
+                git_user_name=config["user"]["name"]
+                if git_user_name != "":
+                    direpa_git_user=os.path.join(direpa_save_json, "mgt", git_user_name)
+
+    if direpa_git_user != "":
+        if os.path.exists(direpa_git_user):
+            return os.path.join(direpa_git_user, filen_save_json)
+
+    return filenpa_save_json
 
 def get_win_id(hex_id, index):
     return "{}_{}".format(
@@ -250,7 +289,7 @@ def get_paths(app_data, window, group_name, active_monitor):
                 paths=Path_dialog(dict(monitor=active_monitor, title=group_name, prompt_text=prompt_text)).loop().output
                 if not isinstance(paths, list):
                     if paths == "_aborted":
-                        message("warning", "Scriptjob save cancelled")
+                        message("warning", "Scriptjob save cancelled", active_monitor)
                         sys.exit(1)
     return paths
 
