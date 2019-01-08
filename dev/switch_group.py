@@ -73,10 +73,12 @@ def switch_group(scriptjob_conf, action="", group_name=""):
         scriptjob_conf.set_file_with_data()
 
         set_previous(scriptjob_conf, "global", start_hex_id)
-
+        active_group_hex_ids=[win["hex_id"] for win in data["groups"][group_index]["windows"]]
+        focus_all_group_windows(active_group_hex_ids)
         Regular_windows.focus(data["groups"][group_index]["previous_window"])
     else:
         active_group_hex_ids=[win["hex_id"] for win in data["groups"][active_group_index]["windows"]]
+        focus_all_group_windows(active_group_hex_ids)
         if start_hex_id in active_group_hex_ids:
             Regular_windows.focus(start_hex_id)
         else:
@@ -86,3 +88,7 @@ def switch_group(scriptjob_conf, action="", group_name=""):
     # scriptjob_conf.set_file_with_data()
 
     message("success", "Active_Group: {}".format(data["active_group"]), active_monitor)
+
+def focus_all_group_windows(windows_hex_ids):
+    for window_hex_id in windows_hex_ids:
+        Regular_windows.focus(window_hex_id)
