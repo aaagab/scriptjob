@@ -126,6 +126,7 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
                     title="Scriptjob Open"), existing_related_windows_hex_ids)
 
                 win_list.btn_done.pack_forget()
+                win_list.focus_buttons.remove(win_list.btn_done)
                 win_index=win_list.loop().output
 
                 if win_index == "_aborted":
