@@ -11,6 +11,8 @@ import subprocess
 import shlex
 import time
 import copy
+import tempfile
+import getpass
 
 from modules.guitools.guitools import Window, Windows, Regular_windows, Monitors, Window_open
 from modules.bwins.bwins import Prompt_boolean
@@ -20,6 +22,7 @@ from dev.windows_list import Windows_list
 import dev.app_parameters as app_params
 from dev.helpers import message, generate_group_name
 from dev.set_previous import set_previous
+
 
 def has_prop(prop, obj):
     if prop in obj and obj[prop]:
@@ -130,7 +133,8 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
                 win_index=win_list.loop().output
 
                 if win_index == "_aborted":
-                    sys.exit()
+                    message("warning", "Scriptjob 'open' cancelled", obj_monitor)
+                    sys.exit(1)
 
                 if win_index != len(existing_related_windows_names)-1:
                     has_selected_shared_window=True
@@ -228,11 +232,27 @@ def set_commands(window, shared_window, related_app_data):
         if has_prop("new_window", related_app_data):
             window["open_cmd"]+=" "+related_app_data["new_window"].replace(" '{PATH}'", "")
 
+    if has_prop("exec_cmds", related_app_data):
+        window["open_cmd"]+=" "+related_app_data["exec_cmds"]
+
 def launch_windows(windows_data, obj_monitor):
     windows_hex_ids=[]
     for window_data in windows_data:
         window=""
         if window_data["hex_id"] == "create":
+            filenpa_tmp=""
+            if has_prop("rcfile_cmds", window_data):
+                fd, filenpa_tmp = tempfile.mkstemp()
+                filenpa_bashrc=os.path.join(os.environ["HOME"], ".bashrc")
+                with os.fdopen(fd, 'w') as f:
+                    f.write("#!/bin/bash")
+                    with open(filenpa_bashrc, "r") as content_bashrc:
+                        f.write(content_bashrc.read())
+                    for cmd in window_data["rcfile_cmds"]:
+                        f.write(cmd)
+
+                window_data["open_cmd"]=window_data["open_cmd"].format(PATH=filenpa_tmp)
+
             launch_window=Window_open(window_data["open_cmd"])
             while not launch_window.has_window():
                 user_continue=Prompt_boolean(dict(monitor=obj_monitor, title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(window_data["open_cmd"]))).loop().output
@@ -241,6 +261,9 @@ def launch_windows(windows_data, obj_monitor):
                     sys.exit(1)
             
             window=launch_window.window
+            if filenpa_tmp:
+                os.remove(filenpa_tmp)
+
         else:
             window=Window(window_data["hex_id"])
 
@@ -264,3 +287,4 @@ def launch_windows(windows_data, obj_monitor):
             window.tile(window_data["tile"], window_data["monitor"])
 
     return windows_hex_ids
+
