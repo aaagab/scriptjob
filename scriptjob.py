@@ -93,6 +93,11 @@ if __name__ == "__main__":
         
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
+    
+    if args.get_active_group_path is True:
+        from dev.get_active_group_path import get_active_group_path
+        print(get_active_group_path(scriptjob_conf))
+        sys.exit(0)
 
     if args.switch_window:
         from dev.switch_window import switch_window

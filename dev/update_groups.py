@@ -59,9 +59,14 @@ def update_groups(scriptjob_conf):
                         else:
                             previous_window=group["windows"][0]["hex_id"]
 
+                        direpa_save_json=""
+                        if "direpa_save_json" in group:
+                            direpa_save_json=group["direpa_save_json"]
+
                         tmp_group.update(
                             name=group["name"],
                             previous_window=previous_window,
+                            direpa_save_json=direpa_save_json,
                             windows=[dict(
                                     hex_id=window["hex_id"],
                                     name=get_window_name(existing_windows, window["hex_id"]),

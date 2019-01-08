@@ -86,6 +86,19 @@
             }
         },
         {
+            "get_active_group_path": {
+                "action": "get_active_group_path",
+                "args": [
+                    "--gap",
+                    "--get-active-group-path"
+                ],
+                "info": "When a group is open from a scriptjob_save.json file, the path of this file is saved in /tmp/scriptjob.json at key 'direpa_save_json'. This command returns this path or empty if group has been created on the fly.",
+                "nargs": 0,
+                "required": false,
+                "show": true
+            }
+        },
+        {
             "switch_group": {
                 "action": "store_true",
                 "args": [
