@@ -11,9 +11,9 @@
             "shared": true
         },
         {
+            "exec_cmds": "-e bash --rcfile '{PATH}'",
             "name": "konsole",
-            "title": "-p tabtitle='{TITLE}'",
-            "exec_cmds": "-e bash --rcfile '{PATH}'"
+            "title": "-p tabtitle='{TITLE}'"
         },
         {
             "name": "firefox",
@@ -203,5 +203,5 @@
             }
         }
     ],
-    "version": "1.0.0-beta-1546952812"
+    "version": "1.0.0-beta-1546974802"
 }
