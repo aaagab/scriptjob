@@ -12,7 +12,8 @@
         },
         {
             "name": "konsole",
-            "title": "-p tabtitle='{TITLE}'"
+            "title": "-p tabtitle='{TITLE}'",
+            "exec_cmds": "-e bash --rcfile '{PATH}'"
         },
         {
             "name": "firefox",
