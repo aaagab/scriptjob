@@ -152,17 +152,18 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
             set_commands(window, False, related_app_data)
 
     windows_hex_ids=launch_windows(data_open["windows"], obj_monitor)
-    insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor)
+    insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor, filenpa_save_json)
 
 def get_window_index(data_open, win_id):
     for w, window in enumerate(data_open["windows"]):
         if window["id"] == win_id:
             return w
 
-def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor):
+def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor, filenpa_save_json):
     scriptjob_data=scriptjob_conf.data
     for group in data_open["groups"]:
         group["name"]=generate_group_name(group["name"], scriptjob_conf)
+        group["direpa_save_json"]=os.path.dirname(filenpa_save_json)
         for window in group["windows"]:
             window_index=get_window_index(data_open, window["id"])
             window["hex_id"]=windows_hex_ids[window_index]
@@ -233,7 +234,8 @@ def set_commands(window, shared_window, related_app_data):
             window["open_cmd"]+=" "+related_app_data["new_window"].replace(" '{PATH}'", "")
 
     if has_prop("exec_cmds", related_app_data):
-        window["open_cmd"]+=" "+related_app_data["exec_cmds"]
+        if has_prop("rcfile_cmds", window):
+            window["open_cmd"]+=" "+related_app_data["exec_cmds"]
 
 def launch_windows(windows_data, obj_monitor):
     windows_hex_ids=[]
