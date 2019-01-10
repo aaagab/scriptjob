@@ -24,11 +24,14 @@ def close(scriptjob_conf, to_close_group_names=[]):
         sys.exit(1)
 
     if to_close_group_names:
-        to_close_group_names=set(to_close_group_names)
-        for to_close_group_name in to_close_group_names:
-            if not to_close_group_name in existing_group_names:
-                message("warning", "There is no group with name '{}' to close".format(to_close_group_name), obj_monitor)
-                sys.exit(1)
+        if to_close_group_names[0] == "all" and "all" not in existing_group_names:
+            to_close_group_names=existing_group_names
+        else:
+            to_close_group_names=set(to_close_group_names)
+            for to_close_group_name in to_close_group_names:
+                if not to_close_group_name in existing_group_names:
+                    message("warning", "There is no group with name '{}' to close".format(to_close_group_name), obj_monitor)
+                    sys.exit(1)
     else:
         options=dict(
             monitor=obj_monitor,
