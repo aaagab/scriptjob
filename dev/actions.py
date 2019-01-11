@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.0.0-beta-1547130928
+# version: 1.0.0-beta-1547213809
 # name: scriptjob
 # license: MIT
 from pprint import pprint
