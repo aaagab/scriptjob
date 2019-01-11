@@ -10,10 +10,12 @@ import sys, os
 
 def message(msg_type, text, obj_monitor):
 
-    if msg_type == "error":
+    if msg_type in ["error","user_error"]:
         msg.user_error(text)
+        msg_type="error"
     elif msg_type == "app_error":
         msg.app_error(text)
+        msg_type="error"
     elif msg_type == "warning":
         msg.warning(text)
     elif msg_type == "info":
