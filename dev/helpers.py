@@ -9,7 +9,6 @@ import modules.message.message as msg
 import sys, os
 
 def message(msg_type, text, obj_monitor):
-
     if msg_type in ["error","user_error"]:
         msg.user_error(text)
         msg_type="error"
