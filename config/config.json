@@ -1,0 +1,220 @@
+{
+    "app_name": "scriptjob",
+    "author": "Gabriel Auger",
+    "description": "Scriptjob is a coding production tool. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Actions are defined in another application called 'scriptjob_actions'. scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (I am using xbindkeys).",
+    "direpa_actions": "/data/bin/scriptjob_actions",
+    "exes": [
+        {
+            "name": "dolphin",
+            "new_tab": "app_parameters",
+            "path_dialog": true,
+            "shared": true
+        },
+        {
+            "exec_cmds": "-e bash --rcfile '{PATH}'",
+            "name": "konsole",
+            "title": "-p tabtitle='{TITLE}'"
+        },
+        {
+            "name": "firefox",
+            "new_tab": "--new-tab '{PATH}'",
+            "new_window": "--new-window '{PATH}'",
+            "shared": true
+        },
+        {
+            "name": "chrome",
+            "new_tab": "--new-tab '{PATH}'",
+            "new_window": "--new-window '{PATH}'",
+            "shared": true
+        },
+        {
+            "name": "code",
+            "new_tab": "--add",
+            "new_window": "--new-window '{PATH}'",
+            "path_dialog": true
+        },
+        {
+            "name": "kate",
+            "new_tab": "--block '{PATH}'",
+            "new_window": "--new '{PATH}'"
+        }
+    ],
+    "filen_actions_json": "actions.json",
+    "filen_scriptjob_json": "scriptjob.json",
+    "license": "MIT",
+    "options": [
+        {
+            "help": {
+                "action": "store_true",
+                "args": [
+                    "-h",
+                    "--help"
+                ],
+                "info": "Show Help and exits.",
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "add_group": {
+                "action": "store_true",
+                "args": [
+                    "-a",
+                    "--add-group"
+                ],
+                "info": "Create a Group of windows. User inputs a group name and then he selects a window with one or multiple actions to execute on that window. Then he can choose another window and repeat the process until all windows have been selected.",
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "close": {
+                "action": "store_true",
+                "args": [
+                    "-c",
+                    "--close"
+                ],
+                "info": "Close a group. It also close all the group windows unless the ones that are shared with other groups. Then it removes the group entry from the main scriptjob.json. 'GROUP_NAME(s)' can be given in order to close them. If no parameter is given then a checkbox list with the group names pops-up allowing the user to select the group to close",
+                "nargs": [
+                    0
+                ],
+                "params_required": [
+                    "GROUP_NAME(s)"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "get_active_group_path": {
+                "action": "get_active_group_path",
+                "args": [
+                    "--gap",
+                    "--get-active-group-path"
+                ],
+                "info": "When a group is open from a scriptjob_save.json file, the path of this file is saved in /tmp/scriptjob.json at key 'direpa_save_json'. This command returns this path or empty if group has been created on the fly.",
+                "nargs": 0,
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "switch_group": {
+                "action": "store_true",
+                "args": [
+                    "--sg",
+                    "--switch-group"
+                ],
+                "info": "ACTION can be 'next', 'previous', or 'group'. 'next' and 'previous' switch to the next or previous group. 'group' parameter needs another parameter 'GROUP_NAME' in order to switch directly to a group by using its name. If no parameters are given a radio button list with existing group names pops-up letting user to switch to the desired group.",
+                "nargs": [
+                    0,
+                    2
+                ],
+                "params_optional": [
+                    "ACTION",
+                    "GROUP_NAME"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "open": {
+                "action": "store_true",
+                "args": [
+                    "-o",
+                    "--open"
+                ],
+                "info": "Recreate windows group(s) from a 'scriptjob_save.json' file. The first argument has to be the json file path, then user can select any group names from this file in order to open them. If user don't choose a path the application searches for a scriptjob_save.json file on the current path. If you want to open one to multiple group names, the scriptjob_save.json file has to be given has first argument. If no group names are given as parameters, all the groups from the file are going to be selected. Settings can added in 'exes' section of config.json to determine how some applications behave during the open step. Settings are 'title' 'new_tab' 'new_window' 'shared'",
+                "nargs": [
+                    0
+                ],
+                "params_optional": [
+                    "PATH",
+                    "GROUP_NAME(s)"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "previous_window": {
+                "action": "store_true",
+                "args": [
+                    "-p",
+                    "--previous-window"
+                ],
+                "info": "Switch to the previous window, type can be 'global' for the last used window used and 'active_group' for active_group previous window.",
+                "nargs": 1,
+                "params_required": [
+                    "TYPE"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "save": {
+                "action": "store_true",
+                "args": [
+                    "-s",
+                    "--save"
+                ],
+                "info": "Generate the file used later by open command. If no 'PATH' is given a path_dialog window pops-up asking user to select a path for the file. If no group name is given a checkbox list pops-up to let the user chosing which groups to save. Settings can added in 'exes' section of config.json to determine how some applications behave during the save step. Settings is 'path_dialog': true",
+                "nargs": [
+                    0
+                ],
+                "params_optional": [
+                    "PATH",
+                    "GROUP_NAME(s)"
+                ],
+                "params_required": [
+                    "TYPE"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "switch_window": {
+                "action": "store_true",
+                "args": [
+                    "--sw",
+                    "--switch-window"
+                ],
+                "info": "Switch to the previous or next window from the active group. 'DIRECTION' can be 'previous' or 'next'.",
+                "nargs": 1,
+                "params_optional": [
+                    "DIRECTION"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "execute": {
+                "action": "store_true",
+                "args": [
+                    "-e",
+                    "--execute"
+                ],
+                "info": "Execute action(s) set for the active window of the active group. Actions are defined in another application called 'scriptjob_actions'.",
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "version": {
+                "action": "store_true",
+                "args": [
+                    "-v",
+                    "--version"
+                ],
+                "info": "Display Program Version.",
+                "required": false,
+                "show": true
+            }
+        }
+    ],
+    "version": "1.0.1"
+}
