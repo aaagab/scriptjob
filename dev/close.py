@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.1.0
+# version: 1.2.0
 # name: scriptjob
 # license: MIT
 
@@ -13,7 +13,7 @@ from dev.helpers import message
 from modules.bwins.bwins import Check_box_list
 from dev.custom_check_box_list import Custom_check_box_list
 
-def close(scriptjob_conf, to_close_group_names=[]):
+def close(dy_app, scriptjob_conf, to_close_group_names=[]):
 
     data=scriptjob_conf.data
     obj_monitor=Monitors().get_active()
@@ -53,7 +53,7 @@ def close(scriptjob_conf, to_close_group_names=[]):
             message("warning", "Scriptjob close cancelled", obj_monitor)
             sys.exit(1)
 
-    obj_actions=Actions().obj_actions
+    obj_actions=Actions(dy_app).obj_actions
 
     other_groups_windows=[]
     selected_group_windows=[]
@@ -84,6 +84,6 @@ def close(scriptjob_conf, to_close_group_names=[]):
 
     data["groups"]=tmp_groups
 
-    update_groups(scriptjob_conf)
+    update_groups(dy_app, scriptjob_conf)
     
     message("success", "Scriptjob group(s) ['{}'] closed.".format("', '".join(to_close_group_names)), obj_monitor)

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.1.0
+# version: 1.2.0
 # name: scriptjob
 # license: MIT
 from pprint import pprint
@@ -20,10 +20,9 @@ class Action(object):
         pprint(vars(self))
 
 class Actions(object):
-    def __init__(self):
-        app_data=Json_config().data
-        self.direpa_actions=app_data["direpa_actions"]
-        self.filenpa_actions_json=os.path.join(self.direpa_actions, app_data["filen_actions_json"])
+    def __init__(self, dy_app):
+        self.direpa_actions=dy_app["direpa_actions"]
+        self.filenpa_actions_json=os.path.join(self.direpa_actions, dy_app["filen_actions_json"])
         self.actions_data=Json_config(self.filenpa_actions_json).data
         self.obj_actions=[]
         self.set_actions()
