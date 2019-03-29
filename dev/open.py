@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.2.1
+# version: 1.3.0
 # name: scriptjob
 # license: MIT
 
@@ -22,7 +22,6 @@ from dev.windows_list import Windows_list
 import dev.app_parameters as app_params
 from dev.helpers import message, generate_group_name
 from dev.set_previous import set_previous
-
 
 def has_prop(prop, obj):
     if prop in obj and obj[prop]:

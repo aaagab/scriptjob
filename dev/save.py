@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.2.1
+# version: 1.3.0
 # name: scriptjob
 # license: MIT
 
@@ -106,7 +106,7 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
                 filenpa_save_json=filenpa_default
             else:
                 if os.path.isdir(path_user):
-                    filen_user=Input_box(dict(monitor=active_monitor, title=dy_app["app_name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
+                    filen_user=Input_box(dict(monitor=active_monitor, title=dy_app["name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
                     filenpa_save_json=os.path.join(path_user, filen_user)
                 else:
                     filenpa_save_json=path_user
