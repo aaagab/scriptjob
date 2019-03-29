@@ -23,7 +23,6 @@ import dev.app_parameters as app_params
 from dev.helpers import message, generate_group_name
 from dev.set_previous import set_previous
 
-
 def has_prop(prop, obj):
     if prop in obj and obj[prop]:
         return True
