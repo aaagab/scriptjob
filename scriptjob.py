@@ -132,8 +132,8 @@ if __name__ == "__main__":
     if args.version is True:
         from modules.message.format_text import Format_text as ft
         lspace="  "
-        print(lspace+ft.bold("Name: ")+conf.data["app_name"])
-        print(lspace+ft.bold("Author: ")+conf.data["author"])
-        print(lspace+ft.bold("License: ")+conf.data["license"])
+        print(lspace+ft.bold("Name: ")+conf.data["name"])
+        print(lspace+ft.bold("Author(s): ")+", ".join(conf.data["authors"]))
+        print(lspace+ft.bold("License(s): ")+", ".join(conf.data["licenses"]))
         print(lspace+ft.bold("Version: ")+conf.data["version"])
         sys.exit(0)
