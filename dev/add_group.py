@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.2.1
+# version: 1.3.0
 # name: scriptjob
 # license: MIT
 
@@ -32,7 +32,7 @@ def add_group(dy_app, scriptjob_conf):
     start_hex_id=Windows.get_active_hex_id()
     obj_monitor=Monitors().get_active()
 
-    input_box=Input_box(dict(monitor=obj_monitor, title=dy_app["app_name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
+    input_box=Input_box(dict(monitor=obj_monitor, title=dy_app["name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
     group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
     
     if group_name == "_aborted":

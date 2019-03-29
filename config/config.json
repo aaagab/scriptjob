@@ -25,6 +25,19 @@
             }
         },
         {
+            "browser_focus": {
+                "action": "store_true",
+                "args": [
+                    "-b",
+                    "--bf",
+                    "--browser-focus"
+                ],
+                "info": "Focus on browser for quick searches",
+                "required": false,
+                "show": true
+            }
+        },
+        {
             "close": {
                 "action": "store_true",
                 "args": [
@@ -105,6 +118,22 @@
                 "nargs": 1,
                 "params_required": [
                     "TYPE"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "quick_action": {
+                "action": "store_true",
+                "args": [
+                    "--qa",
+                    "--quick-action"
+                ],
+                "info": "Perform a quick action. User gives an action name and is ask to select windows manually.",
+                "nargs": 1,
+                "params_required": [
+                    "ACTION_NAME"
                 ],
                 "required": false,
                 "show": true

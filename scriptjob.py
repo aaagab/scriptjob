@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.2.1
+# version: 1.3.0
 # name: scriptjob
 # license: MIT
 
@@ -14,12 +14,7 @@ from dev.update_groups import update_groups
 from dev.helpers import message
 from pprint import pprint
 
-# conf=Json_config().data
-
-
 if __name__ == "__main__":
-    # conf=Json_config()
-
     conf_options=Json_config()
     
     filenpa_script=os.path.realpath(__file__)
@@ -54,6 +49,12 @@ if __name__ == "__main__":
     if args.add_group:
         from dev.add_group import add_group
         add_group(conf.data, scriptjob_conf)
+        scriptjob_conf.set_file_with_data()
+        sys.exit(0)
+
+    if args.browser_focus:
+        from dev.browser_focus import browser_focus
+        browser_focus(conf.data, scriptjob_conf)
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
@@ -111,6 +112,12 @@ if __name__ == "__main__":
         print(get_active_group_path(scriptjob_conf))
         sys.exit(0)
 
+    if args.quick_action:
+        from dev.quick_action import quick_action
+        quick_action(conf.data, scriptjob_conf, args.quick_action[0])
+        scriptjob_conf.set_file_with_data()
+        sys.exit(0)
+        
     if args.switch_window:
         from dev.switch_window import switch_window
         switch_window(scriptjob_conf, args.switch_window[0])
