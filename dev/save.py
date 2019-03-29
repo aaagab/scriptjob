@@ -63,12 +63,11 @@ class Custom_path_dialog(Path_dialog):
 
         self.root.destroy()
 
-def save(scriptjob_conf, dst_path="", selected_group_names=[]):
+def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
     direpa_current=os.getcwd()
     active_monitor=Monitors().get_active()
         
-    app_data=Json_config().data
-    filen_scriptjob_json=app_data["filen_scriptjob_json"]
+    filen_scriptjob_json=dy_app["filen_scriptjob_json"]
     filer_scriptjob_json, ext=os.path.splitext(filen_scriptjob_json)
     filen_save_json="{}_save{}".format(filer_scriptjob_json, ext)
     start_hex_id=Windows.get_active_hex_id()
@@ -107,7 +106,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
                 filenpa_save_json=filenpa_default
             else:
                 if os.path.isdir(path_user):
-                    filen_user=Input_box(dict(monitor=active_monitor, title=Json_config().data["app_name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
+                    filen_user=Input_box(dict(monitor=active_monitor, title=dy_app["app_name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
                     filenpa_save_json=os.path.join(path_user, filen_user)
                 else:
                     filenpa_save_json=path_user
@@ -188,7 +187,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
     found_hex_ids=[]
     all_windows=Windows().sorted_by_class().filter_regular_type().windows
     all_windows_hex_ids=[window.hex_id for window in all_windows]
-    actions=Actions()
+    actions=Actions(dy_app)
 
     for group in dict_groups:
         tmp_group={}
@@ -200,7 +199,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
             if not window["hex_id"] in found_hex_ids:
                 found_hex_ids.append(window["hex_id"])
                 win_id=get_win_id(window["hex_id"], len(found_hex_ids)-1)
-                data_save["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], app_data, active_monitor))
+                data_save["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], dy_app, active_monitor))
             else: # if window already found ( in actions or other group )
                 win_id=get_win_id(window["hex_id"], found_hex_ids.index(window["hex_id"]))
                 # then add new group_name to this window
@@ -223,7 +222,7 @@ def save(scriptjob_conf, dst_path="", selected_group_names=[]):
                         if not parameter in found_hex_ids: # if window not already found
                             found_hex_ids.append(parameter)
                             win_id=get_win_id(parameter, len(found_hex_ids)-1)
-                            data_save["windows"].append(get_window_obj(parameter, win_id, group["name"], app_data, active_monitor))
+                            data_save["windows"].append(get_window_obj(parameter, win_id, group["name"], dy_app, active_monitor))
                             tmp_parameters.append("win_id:"+str(win_id))
                         else: # if window already found ( in actions or other group )
                             win_id=get_win_id(parameter, found_hex_ids.index(parameter))
@@ -277,9 +276,9 @@ def get_win_id(hex_id, index):
         index
     )
 
-def get_paths(app_data, window, group_name, active_monitor):
+def get_paths(dy_app, window, group_name, active_monitor):
     paths=[]
-    for exe in app_data["exes"]:
+    for exe in dy_app["exes"]:
         if window.exe_name == exe["name"]:
             if "path_dialog" in exe and exe["path_dialog"] is True:
                 prompt_text="Select path(s) for:\n'{}' with title '{}'".format(
@@ -293,7 +292,7 @@ def get_paths(app_data, window, group_name, active_monitor):
                         sys.exit(1)
     return paths
 
-def get_window_obj(hex_id, win_id, group_name, app_data, active_monitor):
+def get_window_obj(hex_id, win_id, group_name, dy_app, active_monitor):
     window=Window(hex_id)
 
     tmp_windows=dict(
@@ -303,7 +302,7 @@ def get_window_obj(hex_id, win_id, group_name, app_data, active_monitor):
         name=window.name,
         filenpa_exe=window.filenpa_exe,
         cmd_parameters=window.command.replace(window.filenpa_exe, "").strip(),
-        paths=get_paths(app_data, window, group_name, active_monitor),
+        paths=get_paths(dy_app, window, group_name, active_monitor),
         groups=[group_name],
         tile=window.get_tile(),
         monitor=window.monitor.index

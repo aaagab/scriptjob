@@ -2,9 +2,50 @@
     "authors": [
         "Gabriel Auger"
     ],
+    "direpa_apps": "/data/apps",
     "deps": [],
-    "description": "edit",
+    "description": "Scriptjob is a coding production tool. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Actions are defined in another application called 'scriptjob_actions'. scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (I am using xbindkeys).",
+    "direpa_actions": "/data/bin/scriptjob_actions",
+    "exes": [
+        {
+            "name": "dolphin",
+            "new_tab": "app_parameters",
+            "path_dialog": true,
+            "shared": true
+        },
+        {
+            "exec_cmds": "-e bash --rcfile '{PATH}'",
+            "name": "konsole",
+            "title": "-p tabtitle='{TITLE}'"
+        },
+        {
+            "name": "firefox",
+            "new_tab": "--new-tab '{PATH}'",
+            "new_window": "--new-window '{PATH}'",
+            "shared": true
+        },
+        {
+            "name": "chrome",
+            "new_tab": "--new-tab '{PATH}'",
+            "new_window": "--new-window '{PATH}'",
+            "shared": true
+        },
+        {
+            "name": "code",
+            "new_tab": "--add",
+            "new_window": "--new-window '{PATH}'",
+            "path_dialog": true
+        },
+        {
+            "name": "kate",
+            "new_tab": "--block '{PATH}'",
+            "new_window": "--new '{PATH}'"
+        }
+    ],
+    "filen_actions_json": "actions.json",
     "filen_main": "scriptjob.py",
+    "filen_scriptjob_json": "scriptjob.json",
+    "filen_save_json": "scriptjob_save.json",
     "gpm_version": "0.2.0",
     "installer": "gpm",
     "licenses": [

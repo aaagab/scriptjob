@@ -12,7 +12,6 @@ from tkinter import *
 
 from modules.bwins.bwins import Input_box, Radio_button_list
 from modules.guitools.guitools import Monitors, Windows, Regular_windows
-from modules.json_config.json_config import Json_config
 from dev.windows_list import Windows_list
 from dev.set_previous import set_previous
 from dev.actions import *
@@ -28,12 +27,12 @@ def get_selected_windows(discarded_windows):
 
     return selected_windows
 
-def add_group(scriptjob_conf):
+def add_group(dy_app, scriptjob_conf):
     data=scriptjob_conf.data
     start_hex_id=Windows.get_active_hex_id()
     obj_monitor=Monitors().get_active()
 
-    input_box=Input_box(dict(monitor=obj_monitor, title=Json_config().data["app_name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
+    input_box=Input_box(dict(monitor=obj_monitor, title=dy_app["app_name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
     group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
     
     if group_name == "_aborted":
@@ -44,7 +43,7 @@ def add_group(scriptjob_conf):
 
 
     discarded_windows=[]
-    actions=Actions()
+    actions=Actions(dy_app)
 
     while True:
         selected_windows=get_selected_windows(discarded_windows)

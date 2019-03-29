@@ -14,26 +14,38 @@ from dev.update_groups import update_groups
 from dev.helpers import message
 from pprint import pprint
 
-conf=Json_config().data
-filenpa_scriptjob_json=os.path.join(
-    tempfile.gettempdir(),
-    conf["filen_scriptjob_json"]
-    )
+# conf=Json_config().data
 
-if not os.path.exists(filenpa_scriptjob_json):
-    with open(filenpa_scriptjob_json, "w") as f:
-        f.write("{}")
-        
-scriptjob_conf=Json_config(filenpa_scriptjob_json)
-scriptjob_conf.data["filenpa_scriptjob_json"]=filenpa_scriptjob_json
 
 if __name__ == "__main__":
-    conf=Json_config()
+    # conf=Json_config()
 
-    args, this_help=ops.get_args(sys.argv, conf.data)
+    conf_options=Json_config()
     
+    filenpa_script=os.path.realpath(__file__)
+    direpa_script=os.path.dirname(filenpa_script)
+    filenpa_gpm_json=os.path.join(direpa_script, "gpm.json")
+    conf=Json_config(filenpa_gpm_json)
+
+    conf_options.data.update(description=conf.data["description"])
+    args, this_help=ops.get_args(sys.argv, conf_options.data)
+
+    conf.data["args"]=vars(args)
+
+    filenpa_scriptjob_json=os.path.join(
+    tempfile.gettempdir(),
+    conf.data["filen_scriptjob_json"]
+    )
+
+    if not os.path.exists(filenpa_scriptjob_json):
+        with open(filenpa_scriptjob_json, "w") as f:
+            f.write("{}")
+            
+    scriptjob_conf=Json_config(filenpa_scriptjob_json)
+    scriptjob_conf.data["filenpa_scriptjob_json"]=filenpa_scriptjob_json
+
     if not args.help and not args.version:
-        update_groups(scriptjob_conf) 
+        update_groups(conf.data, scriptjob_conf) 
 
     if args.help:
         print(this_help)
@@ -41,28 +53,28 @@ if __name__ == "__main__":
 
     if args.add_group:
         from dev.add_group import add_group
-        add_group(scriptjob_conf)
+        add_group(conf.data, scriptjob_conf)
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.close:
         from dev.close import close
         if args.close is True:
-            close(scriptjob_conf)
+            close(conf.data, scriptjob_conf)
         else:
-            close(scriptjob_conf, list(args.close))
+            close(conf.data, scriptjob_conf, list(args.close))
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
     if args.open:
         from dev.open import open_json
         if args.open is True:
-            open_json(scriptjob_conf)
+            open_json(conf.data, scriptjob_conf)
         else:
             if len(args.open) > 1:
-                open_json(scriptjob_conf, args.open[0], args.open[1:] )
+                open_json(conf.data, scriptjob_conf, args.open[0], args.open[1:] )
             else:
-                open_json(scriptjob_conf, args.open[0] )
+                open_json(conf.data, scriptjob_conf, args.open[0] )
 
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
@@ -85,11 +97,11 @@ if __name__ == "__main__":
     if args.save:
         from dev.save import save
         if args.save is True:
-            save(scriptjob_conf)
+            save(conf.data, scriptjob_conf)
         elif len(args.save) == 1:
-            save(scriptjob_conf, args.save[0])
+            save(conf.data, scriptjob_conf, args.save[0])
         else:
-            save(scriptjob_conf, args.save[0], args.save[1:])
+            save(conf.data, scriptjob_conf, args.save[0], args.save[1:])
         
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
@@ -108,8 +120,13 @@ if __name__ == "__main__":
 
     if args.execute:
         from dev.execute import execute
-        execute(scriptjob_conf)
+        execute(conf.data, scriptjob_conf)
         scriptjob_conf.set_file_with_data()
+        sys.exit(0)
+
+    if args.search_open:
+        from dev.search_open import search_open
+        search_open(conf.data, args.search_open[0])
         sys.exit(0)
 
     if args.version is True:
