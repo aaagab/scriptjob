@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.1.0
+# version: 1.2.0
 # name: scriptjob
 # license: MIT
 
@@ -12,7 +12,7 @@ from modules.notification.notification import set_notification
 from dev.helpers import message
 from dev.set_previous import set_previous
 
-def execute(scriptjob_conf):
+def execute(dy_app, scriptjob_conf):
     data=scriptjob_conf.data
 
     group_names=[group["name"] for group in data["groups"]]
@@ -25,7 +25,7 @@ def execute(scriptjob_conf):
     active_group_index=group_names.index(data["active_group"])
     active_group=data["groups"][active_group_index]
 
-    obj_actions=Actions().obj_actions
+    obj_actions=Actions(dy_app).obj_actions
     start_hex_id=Windows.get_active_hex_id()
 
 
