@@ -31,6 +31,9 @@ def update_groups(dy_data, scriptjob_conf):
 
     if not "previous_window" in data:
         data["previous_window"]=""
+
+    if not "browser_window" in data:
+        data["browser_window"]=""
        
     if not "groups" in data or not data["groups"]:
         if "active_group" in data:
@@ -135,5 +138,9 @@ def update_groups(dy_data, scriptjob_conf):
             data["previous_window"]=active_window_hex_id
     else:
         data["previous_window"]=active_window_hex_id
+
+    if data["browser_window"]:
+        if not Windows.exists(data["browser_window"]):
+            data["browser_window"]=""
     
     scriptjob_conf.set_file_with_data()

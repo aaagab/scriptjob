@@ -44,7 +44,7 @@ class Actions(object):
                 if path_elem != self.filenpa_actions_json:
                     self.set_action(elem, path_elem)
 
-    def implement(self, obj_action, obj_monitor, group_name, selected_window_hex_id):
+    def implement(self, obj_action, obj_monitor, group_name, selected_window_hex_id, quick_params=[]):
 
         parameters=[]
 
@@ -56,24 +56,27 @@ class Actions(object):
             if parameter_windows:
                 windows_names=["{}: {}".format(window["exe_name"],window["name"])[:50] for window in parameter_windows]
 
-                print(parameter["type"])
                 if parameter["type"] == "window_hex_id":
-                    while win_index == "":
-                        win_list=Windows_list(dict(
-                            items=windows_names, 
-                            prompt_text="Action: '{}'\n{}".format(obj_action.label, parameter["prompt"]), 
-                            monitor=obj_monitor, 
-                            title="Group: {}".format(group_name)), parameter_windows_hex_ids)
+                    if quick_params:
+                        win_hex_id=quick_params.pop(0)
+                        parameters.append(win_hex_id)
+                    else:
+                        while win_index == "":
+                            win_list=Windows_list(dict(
+                                items=windows_names, 
+                                prompt_text="Action: '{}'\n{}".format(obj_action.label, parameter["prompt"]), 
+                                monitor=obj_monitor, 
+                                title="Group: {}".format(group_name)), parameter_windows_hex_ids)
 
-                        win_list.btn_cancel.configure(text="Go Back")
-                        win_list.btn_done.pack_forget()
-                        win_list.focus_buttons.remove(win_list.btn_done)
-                        win_index=win_list.loop().output
+                            win_list.btn_cancel.configure(text="Go Back")
+                            win_list.btn_done.pack_forget()
+                            win_list.focus_buttons.remove(win_list.btn_done)
+                            win_index=win_list.loop().output
 
-                        if win_index == "_aborted":
-                            return None
+                            if win_index == "_aborted":
+                                return None
 
-                    parameters.append(parameter_windows[win_index]["hex_id"])
+                        parameters.append(parameter_windows[win_index]["hex_id"])
                 elif parameter["type"] == "active_window":
                     parameters.append(selected_window_hex_id)
                 elif parameter["type"] == "previous_window_hex_id":
