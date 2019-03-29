@@ -30,10 +30,10 @@ def has_prop(prop, obj):
     else:
         return False
 
-def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
+def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
     if not filenpa_save_json:
         direpa_current=os.getcwd()
-        filen_scriptjob_json=Json_config().data["filen_scriptjob_json"]
+        filen_scriptjob_json=dy_app["filen_scriptjob_json"]
         name, ext=os.path.splitext(filen_scriptjob_json)
         filen_save_json="{}_save{}".format(name, ext)
         filenpa_save_json=os.path.join(direpa_current, filen_save_json)
@@ -46,8 +46,6 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         sys.exit(1)
 
     filenpa_save_json=os.path.abspath(filenpa_save_json)
-    app_data=Json_config().data
-    current_conf=Json_config()
     open_conf=Json_config(filenpa_save_json)
     data_open=open_conf.data
     start_hex_id=Windows.get_active_hex_id()
@@ -102,7 +100,7 @@ def open_json(scriptjob_conf, filenpa_save_json="", group_names=[]):
         has_selected_shared_window=False
         
         existing_related_windows=copy.deepcopy([win for win in existing_windows.windows if win["exe_name"] == window["exe"]])
-        related_app_data=[exe for exe in app_data["exes"] if exe["name"] == window["exe"]]
+        related_app_data=[exe for exe in dy_app["exes"] if exe["name"] == window["exe"]]
         related_app_data=related_app_data[0] if related_app_data else {}
 
         if has_prop("shared", related_app_data):

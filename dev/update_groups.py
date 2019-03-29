@@ -17,8 +17,8 @@ def get_window_name(existing_windows, hex_id):
 
     return win_name
 
-def update_groups(scriptjob_conf):
-    obj_actions=Actions().obj_actions
+def update_groups(dy_data, scriptjob_conf):
+    obj_actions=Actions(dy_data).obj_actions
     existing_windows=Regular_windows().windows
     active_window_hex_id=Windows.get_active_hex_id()
 
