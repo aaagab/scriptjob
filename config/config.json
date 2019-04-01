@@ -25,19 +25,6 @@
             }
         },
         {
-            "browser_focus": {
-                "action": "store_true",
-                "args": [
-                    "-b",
-                    "--bf",
-                    "--browser-focus"
-                ],
-                "info": "Focus on browser for quick searches",
-                "required": false,
-                "show": true
-            }
-        },
-        {
             "close": {
                 "action": "store_true",
                 "args": [
@@ -69,6 +56,19 @@
             }
         },
         {
+            "open_explorer": {
+                "action": "store_true",
+                "args": [
+                    "--oe",
+                    "--open-explorer"
+                ],
+                "info": "Open active group path in default explorer.",
+                "nargs": 0,
+                "required": false,
+                "show": true
+            }
+        },
+        {
             "switch_group": {
                 "action": "store_true",
                 "args": [
@@ -83,6 +83,24 @@
                 "params_optional": [
                     "ACTION",
                     "GROUP_NAME"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
+            "focus_command": {
+                "action": "store_true",
+                "args": [
+                    "-f",
+                    "--fc",
+                    "--focus-cmd",
+                    "--focus-command"
+                ],
+                "info": "Focus on a windows according to a given command alias. For instance --focus-cmd browser, is going to open a browser windows and get its id in a variable inside scriptjob.json. The browser default command is given in gpm.json path. For now you can use browser, terminal, and explorer. This command allows to place a shortcut for one program and focus to this window quickly.",
+                "nargs": 1,
+                "params_required": [
+                    "COMMAND"
                 ],
                 "required": false,
                 "show": true

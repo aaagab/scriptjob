@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 1.3.1
+# version: 2.0.0
 # name: scriptjob
 # license: MIT
 
@@ -14,10 +14,15 @@ from modules.bwins.bwins import Check_box_list
 from dev.custom_check_box_list import Custom_check_box_list
 
 def close(dy_app, scriptjob_conf, to_close_group_names=[]):
-
     data=scriptjob_conf.data
     obj_monitor=Monitors().get_active()
     existing_group_names=[group["name"] for group in data["groups"]]
+
+    if to_close_group_names:
+        if to_close_group_names[0] == "all" and "all" not in existing_group_names:
+            for cmd_alias in data["focus"]:
+                if data["focus"][cmd_alias]:
+                    Window(data["focus"][cmd_alias]).close()
 
     if not existing_group_names:
         message("warning", "There is no group to close", obj_monitor)
@@ -80,7 +85,12 @@ def close(dy_app, scriptjob_conf, to_close_group_names=[]):
     windows_hex_id_to_close=set(selected_group_windows) - set(other_groups_windows)
 
     for hex_id in windows_hex_id_to_close:
-        Window(hex_id).close()
+        focus_hex_ids=[data["focus"][cmd_alias] for cmd_alias in data["focus"]]
+        if focus_hex_ids:
+            if hex_id not in focus_hex_ids:
+                Window(hex_id).close()
+        else:
+            Window(hex_id).close()
 
     data["groups"]=tmp_groups
 
