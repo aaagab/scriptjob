@@ -32,9 +32,17 @@ def update_groups(dy_data, scriptjob_conf):
     if not "previous_window" in data:
         data["previous_window"]=""
 
-    if not "browser_window" in data:
-        data["browser_window"]=""
-       
+    if not "focus" in data:
+        data["focus"]={}
+
+    for cmd_alias in dy_data["default"]:
+        if not cmd_alias in data["focus"]:
+            data["focus"][cmd_alias]=""
+
+        if data["focus"][cmd_alias]:
+            if not Windows.exists(data["focus"][cmd_alias]):
+                data["focus"][cmd_alias]=""
+        
     if not "groups" in data or not data["groups"]:
         if "active_group" in data:
             data["active_group"]=""
@@ -138,9 +146,5 @@ def update_groups(dy_data, scriptjob_conf):
             data["previous_window"]=active_window_hex_id
     else:
         data["previous_window"]=active_window_hex_id
-
-    if data["browser_window"]:
-        if not Windows.exists(data["browser_window"]):
-            data["browser_window"]=""
     
     scriptjob_conf.set_file_with_data()

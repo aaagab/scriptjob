@@ -52,9 +52,9 @@ if __name__ == "__main__":
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
-    if args.browser_focus:
-        from dev.browser_focus import browser_focus
-        browser_focus(conf.data, scriptjob_conf)
+    if args.focus_command:
+        from dev.focus_command import focus_command
+        focus_command(conf.data, scriptjob_conf)
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
@@ -77,6 +77,12 @@ if __name__ == "__main__":
             else:
                 open_json(conf.data, scriptjob_conf, args.open[0] )
 
+        scriptjob_conf.set_file_with_data()
+        sys.exit(0)
+
+    if args.open_explorer:
+        from dev.open_explorer import open_explorer
+        open_explorer(conf.data, scriptjob_conf)
         scriptjob_conf.set_file_with_data()
         sys.exit(0)
 
