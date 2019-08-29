@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 4.0.0
-# name: scriptjob
-# license: MIT
-
 from modules.notification.notification import set_notification
 import modules.message.message as msg
 import sys, os
