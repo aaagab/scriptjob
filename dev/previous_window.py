@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 4.0.0
-# name: scriptjob
-# license: MIT
-
 import os, sys
 from modules.guitools.guitools import Windows, Window, Regular_windows, Monitors
 from dev.set_previous import set_previous

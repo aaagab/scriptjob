@@ -1,9 +1,4 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 4.0.0
-# name: scriptjob
-# license: MIT
-
 from modules.bwins.bwins import Check_box_list
 from modules.guitools.guitools import Regular_windows
 import time

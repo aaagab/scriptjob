@@ -1,8 +1,4 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 4.0.0
-# name: scriptjob
-# license: MIT
 from pprint import pprint
 from dev.windows_list import Windows_list
 from modules.json_config.json_config import Json_config
