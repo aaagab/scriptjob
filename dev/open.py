@@ -1,9 +1,5 @@
 #!/usr/bin/env python3
-# author: Gabriel Auger
-# version: 4.0.0
-# name: scriptjob
-# license: MIT
-
+import json
 import os, sys
 from pprint import pprint
 import re
@@ -39,14 +35,16 @@ def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
     
     obj_monitor=Monitors().get_active()
 
-
     if not os.path.exists(filenpa_save_json):
         message("error", "open: '{}' not found.".format(filenpa_save_json), obj_monitor)
         sys.exit(1)
 
     filenpa_save_json=os.path.abspath(filenpa_save_json)
-    open_conf=Json_config(filenpa_save_json)
-    data_open=open_conf.data
+    data_open=None
+    with open(filenpa_save_json, "r") as f:
+        raw_text=re.sub("\$\{cwd\}", os.path.dirname(filenpa_save_json), f.read())
+        data_open=json.loads(raw_text)
+
     start_hex_id=Windows.get_active_hex_id()
 
     if not has_prop("windows", data_open):
