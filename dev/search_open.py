@@ -10,7 +10,7 @@ from modules.guitools.guitools import Monitors
 from modules.bwins.bwins import Check_box_list
 
 def search_open(dy_app, diren_app):
-    index=1
+    index="1"
     diren_splitted=diren_app.split(",")
     diren_app=diren_splitted[0]
     if len(diren_splitted) > 1:
