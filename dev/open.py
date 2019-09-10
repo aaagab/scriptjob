@@ -45,7 +45,7 @@ def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
     data_open=None
     with open(filenpa_save_json, "r") as f:
         raw_text=re.sub("\$\{cwd\}", direpa_save_json, f.read())
-        raw_text=re.sub("\$\{project_alias\}", project_alias, f.read())
+        raw_text=re.sub("\$\{project_alias\}", project_alias, raw_text)
         data_open=json.loads(raw_text)
 
     start_hex_id=Windows.get_active_hex_id()
