@@ -24,7 +24,6 @@ def quick_action(dy_app, scriptjob_conf, action_name):
         
         input_box=Input_box(dict(monitor=obj_monitor, title=dy_app["name"], prompt_text="Input Group Name: ", default_text=generate_group_name(action_name, scriptjob_conf)))
         group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
-        group_name="browser"
 
         if group_name == "_aborted":
             message("warning", "Scriptjob 'add' cancelled", obj_monitor)
