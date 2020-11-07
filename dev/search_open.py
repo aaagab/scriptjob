@@ -17,7 +17,7 @@ def search_open(dy_app, diren_app):
         index=diren_splitted[1]
 
     active_monitor=Monitors().get_active()
-    filenpa_save_json=os.path.join(dy_app["direpa_apps"], diren_app[0], diren_app, index ,dy_app["filen_save_json"])
+    filenpa_save_json=os.path.join(dy_app["direpa_apps"].format(user_profile=os.path.expanduser("~")), diren_app[0], diren_app, index ,dy_app["filen_save_json"])
     if os.path.exists(filenpa_save_json):
         message("success","{}/{} found.".format(diren_app, dy_app["filen_save_json"]), active_monitor)
         command="scriptjob --open '{}'".format(filenpa_save_json)
