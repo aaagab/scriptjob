@@ -247,9 +247,9 @@ def launch_windows(windows_data, obj_monitor):
                 with os.fdopen(fd, 'w') as f:
                     f.write("#!/bin/bash")
                     with open(filenpa_bashrc, "r") as content_bashrc:
-                        f.write(content_bashrc.read())
+                        f.write("{}\n".format(content_bashrc.read()))
                     for cmd in window_data["rcfile_cmds"]:
-                        f.write(cmd)
+                        f.write("{}\n".format(cmd))
 
                 window_data["open_cmd"]=window_data["open_cmd"].format(PATH=filenpa_tmp)
 
