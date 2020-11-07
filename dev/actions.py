@@ -17,7 +17,7 @@ class Action(object):
 
 class Actions(object):
     def __init__(self, dy_app):
-        self.direpa_actions=dy_app["direpa_actions"]
+        self.direpa_actions=dy_app["direpa_actions"].format(user_profile=os.path.expanduser("~"))
         self.filenpa_actions_json=os.path.join(self.direpa_actions, dy_app["filen_actions_json"])
         self.actions_data=Json_config(self.filenpa_actions_json).data
         self.obj_actions=[]
