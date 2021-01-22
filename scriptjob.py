@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 7.0.0
+# version: 7.0.1
 # name: scriptjob
 # license: MIT
 
@@ -60,6 +60,7 @@ if __name__ == "__main__":
 
     if args.close:
         from dev.close import close
+
         if args.close is True:
             close(conf.data, scriptjob_conf)
         else:
