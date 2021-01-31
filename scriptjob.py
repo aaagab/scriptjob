@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # author: Gabriel Auger
-# version: 7.0.1
+# version: 8.0.0
 # name: scriptjob
 # license: MIT
 
@@ -45,6 +45,8 @@ if __name__ == "__main__":
     if args.help:
         print(this_help)
         sys.exit(0)
+
+    direpa_wrk=os.path.join(os.path.expanduser("~"), "fty", "wrk")
 
     if args.add_group:
         from dev.add_group import add_group
@@ -140,7 +142,17 @@ if __name__ == "__main__":
 
     if args.search_open:
         from dev.search_open import search_open
-        search_open(conf.data, args.search_open[0])
+
+        index=None
+        if args.index:
+            if len(args.index) == 1:
+                index=args.index[0]
+        search_open(
+            conf.data, 
+            args.search_open[0],
+            direpa_wrk=direpa_wrk,
+            index=index,
+        )
         sys.exit(0)
 
     if args.version is True:
