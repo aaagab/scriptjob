@@ -56,6 +56,21 @@
             }
         },
         {
+            "index": {
+                "action": "store_true",
+                "args": [
+                    "--index"
+                ],
+                "info": "Provides index to select apps in search open.",
+                "nargs": 1,
+                "params_required": [
+                    "INT"
+                ],
+                "required": false,
+                "show": true
+            }
+        },
+        {
             "open_explorer": {
                 "action": "store_true",
                 "args": [
