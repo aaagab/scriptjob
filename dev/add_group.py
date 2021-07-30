@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
-import os, sys
 from pprint import pprint
+import copy
+import os
+import sys
 import time
 
-from tkinter import *
+# from tkinter import *
+from .helpers import generate_group_name, message
+from .set_previous import set_previous
+from .windows_list import Windows_list
 
-from modules.bwins.bwins import Input_box, Radio_button_list
-from modules.guitools.guitools import Monitors, Windows, Regular_windows
-from dev.windows_list import Windows_list
-from dev.set_previous import set_previous
-from dev.actions import *
-from dev.helpers import generate_group_name, message
-import copy
+from ..gpkgs.bwins import Input_box, Radio_button_list
+from ..gpkgs.guitools import Monitors, Windows, Regular_windows
+# from dev.actions import *
 
 def get_selected_windows(discarded_windows):
     selected_windows=[]
@@ -22,23 +23,24 @@ def get_selected_windows(discarded_windows):
 
     return selected_windows
 
-def add_group(dy_app, scriptjob_conf):
-    data=scriptjob_conf.data
+def add_group(
+    app_name,
+    actions,
+    dy_state,
+):
+    dy_state=dy_state
     start_hex_id=Windows.get_active_hex_id()
     obj_monitor=Monitors().get_active()
 
-    input_box=Input_box(dict(monitor=obj_monitor, title=dy_app["name"], prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", scriptjob_conf)))
-    group_name=generate_group_name(input_box.loop().output, scriptjob_conf)
+    input_box=Input_box(dict(monitor=obj_monitor, title=app_name, prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", dy_state["groups"])))
+    group_name=generate_group_name(input_box.loop().output, dy_state["groups"])
     
     if group_name == "_aborted":
         message("warning", "Scriptjob 'add' cancelled", obj_monitor)
         sys.exit(1)
 
     obj_group=dict(name=group_name)
-
-
     discarded_windows=[]
-    actions=Actions(dy_app)
 
     while True:
         selected_windows=get_selected_windows(discarded_windows)
@@ -132,18 +134,16 @@ def add_group(dy_app, scriptjob_conf):
            
     if "windows" in obj_group:
         if obj_group["windows"]:
-            group_names=[group["name"] for group in data["groups"]]
+            group_names=[group["name"] for group in dy_state["groups"]]
             if group_names:
-                set_previous(scriptjob_conf, "active_group", start_hex_id)
+                set_previous(dy_state, "active_group", start_hex_id)
 
             Regular_windows.focus(obj_group["windows"][0]["hex_id"])
             obj_group["previous_window"]=obj_group["windows"][0]["hex_id"]
 
-            data["groups"].append(obj_group)
-            data["active_group"]=group_name
-            # scriptjob_conf.set_file_with_data(data)
+            dy_state["groups"].append(obj_group)
+            dy_state["active_group"]=group_name
 
-            set_previous(scriptjob_conf, "global", start_hex_id)
+            set_previous(dy_state, "global", start_hex_id)
             message("success", "scriptjob group '{}' added.".format(group_name), obj_monitor)
 
-            # scriptjob_conf.set_file_with_data(data)

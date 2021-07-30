@@ -1,18 +1,19 @@
 #!/usr/bin/env python3
-import os, sys
-from modules.guitools.guitools import Windows, Window, Regular_windows, Monitors
-from dev.set_previous import set_previous
-from dev.helpers import message
+import os
+import sys
 
-def previous_window(scriptjob_conf, previous_type):
+from .set_previous import set_previous
+from .helpers import message
+
+from ..gpkgs.guitools import Windows, Window, Regular_windows, Monitors
+
+def previous_window(dy_state, previous_type):
     obj_monitor=Monitors().get_active()
-    data=scriptjob_conf.data
     start_hex_id=Windows.get_active_hex_id()
     if previous_type == "global":
         if data["previous_window"] != start_hex_id:
             Regular_windows.focus(data["previous_window"])
-            set_previous(scriptjob_conf, "global", start_hex_id)
-            # scriptjob_conf.set_file_with_data()
+            set_previous(dy_state, "global", start_hex_id)
         else:
             pass
     elif previous_type == "active_group":
@@ -29,8 +30,7 @@ def previous_window(scriptjob_conf, previous_type):
         if start_hex_id in active_group_hex_ids:
             if start_hex_id != active_group["previous_window"]:
                 Regular_windows.focus(active_group["previous_window"])
-                set_previous(scriptjob_conf, "active_group", start_hex_id)
-                # scriptjob_conf.set_file_with_data()
+                set_previous(dy_state, "active_group", start_hex_id)
             else:
                 pass
         else:
