@@ -1,3 +1,5 @@
+for options I need to show all aliases from help in usage
+
 windows: a software window is identified by a window id
 windows groups: windows groups are defined by a name
 for each window a series of actions can be defined.
@@ -15,7 +17,25 @@ Actions:
     - --next window_ids window_id
     - --previous window_ids window_id
 
-predefined actions.
+state: a file describing windows, groups and in groups the windows related actions.
+
+builtin-in states:
+  cli-dev
+  webapp-dev
+
+--open filenpa_state
+--open --cli-dev path
+So then for me I give a path and a builtin-state and it should go there and add the builtin-state to the scriptjob session
+So open function is going to be kept the difference is a template is going to be available in scriptjob and also application are going to be defined with {browser} and {editor}
+
+
+
+
+--search-open app_name
+what about
+--search-open app_name --cli-dev
+  what about scripjob_save.json file then in app folder?
+    I don't need it, because I follow the structure of gpkgs, maybe I could the main path of the tree in settings.json /home/gabaaa/fty/src/
 
 
 hotkeys:

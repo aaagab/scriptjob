@@ -18,8 +18,9 @@ def get_search_open(
     alias_app,
     direpa_wrk=None,
     index=None,
+    active_window_hex_id=None,
 ):
-    active_monitor=Monitors().get_active()
+    active_monitor=Monitors().get_active(active_window_hex_id)
     direpa_app_name=os.path.join(direpa_wrk, alias_app[0], alias_app)
     if not os.path.exists(direpa_app_name):
         message("warning", "not found '{}'".format(direpa_app_name), active_monitor)

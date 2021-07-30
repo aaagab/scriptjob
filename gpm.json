@@ -5,7 +5,7 @@
     "deps": [
         "a1c744b9-f712-43fa-bf83-60ad15122cea|bwins|2.0.4|gpm",
         "fe9fbe81-806f-4e85-8042-aaa33ce02d6a|etconf|2.2.4|gpm",
-        "f128844d-236e-4c1e-8537-92b2d57ffc76|guitools|2.0.3|gpm",
+        "f128844d-236e-4c1e-8537-92b2d57ffc76|guitools|2.1.0|gpm",
         "cf09346e-b436-4259-b6dd-e56516b508a5|message|8.1.2|gpm",
         "28deaa04-a109-4dd3-9a04-ee896c96af6d|notification|2.0.0|gpm",
         "ca72f0a9-8a9b-4ff6-a013-e5d0974cb1e5|options|8.7.1|gpm"
@@ -18,7 +18,7 @@
         "MIT"
     ],
     "name": "scriptjob",
-    "timestamp": 1627617637.5301027,
+    "timestamp": 1627656574.6682112,
     "uuid4": "43f5e40b-e7e7-4ee6-b3d9-0c6b1e29e795",
-    "version": "9.0.0"
+    "version": "9.1.0"
 }
