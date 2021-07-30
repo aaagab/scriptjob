@@ -2,62 +2,23 @@
     "authors": [
         "Gabriel Auger"
     ],
-    "default": {
-        "browser": "firefox",
-        "editor": "code",
-        "explorer": "dolphin",
-        "terminal": "konsole"
-    },
-    "deps": [],
-    "description": "Scriptjob is a coding production tool. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Actions are defined in another application called 'scriptjob_actions'. scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (I am using xbindkeys).",
-    "direpa_actions": "{user_profile}/fty/bin/scriptjob_actions",
-    "direpa_apps": "{user_profile}/fty/wrk",
-    "exes": [
-        {
-            "name": "dolphin",
-            "new_tab": "app_parameters",
-            "path_dialog": true,
-            "shared": true
-        },
-        {
-            "exec_cmds": "-e bash --rcfile '{PATH}'",
-            "name": "konsole",
-            "title": "-p tabtitle='{TITLE}'"
-        },
-        {
-            "name": "firefox",
-            "new_tab": "--new-tab '{PATH}'",
-            "new_window": "--new-window '{PATH}'",
-            "shared": true
-        },
-        {
-            "name": "chrome",
-            "new_tab": "--new-tab '{PATH}'",
-            "new_window": "--new-window '{PATH}'",
-            "shared": true
-        },
-        {
-            "name": "code",
-            "new_tab": "--add",
-            "new_window": "--new-window '{PATH}'",
-            "path_dialog": true
-        },
-        {
-            "name": "kate",
-            "new_tab": "--block '{PATH}'",
-            "new_window": "--new '{PATH}'"
-        }
+    "deps": [
+        "a1c744b9-f712-43fa-bf83-60ad15122cea|bwins|2.0.4|gpm",
+        "fe9fbe81-806f-4e85-8042-aaa33ce02d6a|etconf|2.2.4|gpm",
+        "f128844d-236e-4c1e-8537-92b2d57ffc76|guitools|2.0.3|gpm",
+        "cf09346e-b436-4259-b6dd-e56516b508a5|message|8.1.2|gpm",
+        "28deaa04-a109-4dd3-9a04-ee896c96af6d|notification|2.0.0|gpm",
+        "ca72f0a9-8a9b-4ff6-a013-e5d0974cb1e5|options|8.7.1|gpm"
     ],
-    "filen_actions_json": "actions.json",
-    "filen_main": "scriptjob.py",
-    "filen_save_json": "scriptjob_save.json",
-    "filen_scriptjob_json": "scriptjob.json",
+    "description": "Scriptjob is a coding production tool. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Actions are defined in another application called 'scriptjob_actions'. scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (I am using xbindkeys).",
+    "filen_main": "main.py",
     "gpm_version": "0.2.0",
     "installer": "gpm",
     "licenses": [
         "MIT"
     ],
     "name": "scriptjob",
+    "timestamp": 1627617637.5301027,
     "uuid4": "43f5e40b-e7e7-4ee6-b3d9-0c6b1e29e795",
-    "version": "8.0.0"
+    "version": "9.0.0"
 }

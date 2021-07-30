@@ -3,5 +3,8 @@ __pycache__/
 .pytest_cache/
 .vscode
 *.pyc
-config/private_config.json
 modules/
+gpkgs/
+/.etconf/
+/todo.txt
+.directory

@@ -1,0 +1,96 @@
+{
+  "add_group": {
+    "aliases": "-a,--add-group",
+    "info": "Create a Group of windows. User inputs a group name and then he selects a window with one or multiple actions to execute on that window. Then he can choose another window and repeat the process until all windows have been selected."
+  },
+  "close": {
+    "aliases": "-c,--close",
+    "info": "Close a group. It also close all the group windows unless the ones that are shared with other groups. Then it removes the group entry from the main scriptjob.json. 'GROUP_NAME(s)' can be given in order to close them. If no parameter is given then a checkbox list with the group names pops-up allowing the user to select the group to close",
+    "nvalues": "*",
+    "values": "GROUP_NAME(s)"
+  },
+  "get_active_group_path": {
+    "action": "get_active_group_path",
+    "aliases": "--gap,--get-active-group-path",
+    "info": "When a group is open from a scriptjob_save.json file, the path of this file is saved in /tmp/scriptjob.json at key 'direpa_save_json'. This command returns this path or empty if group has been created on the fly."
+  },
+  "index": {
+    "aliases": "--index",
+    "info": "Provides index to select apps in search open.",
+    "nested": true,
+    "nvalues": 1,
+    "values": "INT"
+  },
+  "focus_command": {
+    "aliases": "-f,--fc,--focus-cmd,--focus-command",
+    "info": "Focus on a windows according to a given command alias. For instance --focus-cmd browser, is going to open a browser windows and get its id in a variable inside scriptjob.json. The browser default command is given in gpm.json path. For now you can use browser, terminal, and explorer. This command allows to place a shortcut for one program and focus to this window quickly.",
+    "nvalues": 1,
+    "values": "COMMAND"
+  },
+  "next": {
+    "nested": true
+  },
+  "open": {
+    "aliases": "-o,--open",
+    "args": "path_json",
+    "info": "Recreate windows group(s) from a 'scriptjob_save.json' file. The first argument has to be the json file path, then user can select any group names from this file in order to open them. If user don't choose a path the application searches for a scriptjob_save.json file on the current path. If you want to open one to multiple group names, the scriptjob_save.json file has to be given has first argument. If no group names are given as parameters, all the groups from the file are going to be selected. Settings can added in 'exes' section of config.json to determine how some applications behave during the open step. Settings are 'title' 'new_tab' 'new_window' 'shared'",
+    "nvalues": "*",
+    "values": "GROUP_NAME"
+  },
+  "open_explorer": {
+    "aliases": "--oe,--open-explorer",
+    "info": "Open active group path in default explorer."
+  },
+
+  "path_json": {
+    "nested": true,
+    "nvalues": 1,
+    "values": "PATH"
+  },
+  "previous": {
+    "nested": true
+  },
+  "previous_window": {
+    "aliases": "-p,--previous-window",
+    "info": "Switch to the previous window, type can be 'global' for the last used window used and 'active_group' for active_group previous window.",
+    "nvalues": 1,
+    "values": "TYPE"
+  },
+  "switch_group": {
+    "aliases": "--sg,--switch-group",
+    "args": "next,previous",
+    "info": "ACTION can be 'next', 'previous', or 'group'. 'next' and 'previous' switch to the next or previous group. 'group' parameter needs another parameter 'GROUP_NAME' in order to switch directly to a group by using its name. If no parameters are given a radio button list with existing group names pops-up letting user to switch to the desired group.",
+    "nvalues": "?",
+    "values": "GROUP_NAME"
+  },
+  "quick_action": {
+    "aliases": "--qa,--quick-action",
+    "info": "Perform a quick action. User gives an action name and is ask to select windows manually.",
+    "nvalues": 1,
+    "values": "ACTION_NAME"
+  },
+  "save": {
+    "aliases": "-s,--save",
+    "args": "path_json",
+    "info": "Generate the file used later by open command. If no 'PATH' is given a path_dialog window pops-up asking user to select a path for the file. If no group name is given a checkbox list pops-up to let the user chosing which groups to save. Settings can added in 'exes' section of config.json to determine how some applications behave during the save step. Settings is 'path_dialog': true",
+    "nvalues": "*",
+    "values": "GROUP_NAME"
+  },
+  "search_open": {
+    "aliases": "--so,--search-open",
+    "args": "index",
+    "info": "Go through apps directory find folder name and open its scriptjob_save.json if any.",
+    "nvalues": 1,
+    "values": "FOLDER_NAME"
+  },
+  "switch_window": {
+    "aliases": "--sw,--switch-window",
+    "info": "Switch to the previous or next window from the active group. 'DIRECTION' can be 'previous' or 'next'.",
+    "nvalues": 1,
+    "values": ["DIRECTION"]
+  },
+  "execute": {
+    "aliases": "-e,--execute",
+    "info": "Execute action(s) set for the active window of the active group. Actions are defined in another application called 'scriptjob_actions'."
+  }
+}

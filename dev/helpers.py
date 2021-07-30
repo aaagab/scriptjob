@@ -1,14 +1,14 @@
 #!/usr/bin/env python3
-from modules.notification.notification import set_notification
-import modules.message.message as msg
-import sys, os
+import sys
+import os
+
+from ..gpkgs import message as msg
+
+from ..gpkgs.notification import set_notification
 
 def message(msg_type, text, obj_monitor):
-    if msg_type in ["error","user_error"]:
-        msg.user_error(text)
-        msg_type="error"
-    elif msg_type == "app_error":
-        msg.app_error(text)
+    if msg_type == "error":
+        msg.error(text)
         msg_type="error"
     elif msg_type == "warning":
         msg.warning(text)
@@ -19,8 +19,8 @@ def message(msg_type, text, obj_monitor):
     
     set_notification(text, msg_type, obj_monitor)
 
-def generate_group_name(group_name, scriptjob_conf):
-    existing_group_names=[group["name"] for group in scriptjob_conf.data["groups"]]
+def generate_group_name(group_name, groups):
+    existing_group_names=[group["name"] for group in groups]
 
     index=2
     new_group_name=group_name

@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
-from modules.bwins.bwins import *
-from modules.guitools.guitools import Regular_windows
+import sys
 import time
+
+from ..gpkgs.bwins import Radio_button_list
+from ..gpkgs.guitools import Regular_windows
+
+from tkinter import Button
+
 
 class Windows_list(Radio_button_list):
     def __init__(self, options, windows_hex_ids=""):
@@ -20,19 +25,19 @@ class Windows_list(Radio_button_list):
 
             counter+=1
 
-        self.btn_cancel = Button(self.bottom_frame,text='Cancel', name="btn_cancel")
+        self.btn_cancel = Button(self.bottom_frame,text='Cancel', name="btn_cancel", **self.theme)
         self.btn_cancel.bind("<Button-1>", lambda event: self.validate(event))
         self.btn_cancel.bind("<Return>", lambda event: self.validate(event))
         self.bind_change_focus(self.btn_cancel)
         self.btn_cancel.pack(side='left', padx=(20,0))
 
-        self.btn_done = Button(self.bottom_frame,text='Done', name="btn_done")
+        self.btn_done = Button(self.bottom_frame,text='Done', name="btn_done", **self.theme)
         self.btn_done.bind("<Button-1>", lambda event: self.validate(event))
         self.btn_done.bind("<Return>", lambda event: self.validate(event))
         self.bind_change_focus(self.btn_done)
         self.btn_done.pack(side='left', padx=(10,10))
 
-        self.btn_select = Button(self.bottom_frame,text='Select', name="btn_select")
+        self.btn_select = Button(self.bottom_frame,text='Select', name="btn_select", **self.theme)
         self.btn_select.bind("<Button-1>", lambda event: self.validate(event))
         self.btn_select.bind("<Return>", lambda event: self.validate(event))
         self.bind_change_focus(self.btn_select)
