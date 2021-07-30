@@ -14,12 +14,12 @@ def get_window_name(existing_windows, hex_id):
     return win_name
 
 def update_groups(
+    active_window_hex_id,
     default_applications,
     dy_state,
     actions,
 ):
     existing_windows=Regular_windows().windows
-    active_window_hex_id=Windows.get_active_hex_id()
     windows_hex_ids_to_remove=[]
     groups_indexes_to_remove=[]
     
@@ -143,6 +143,6 @@ def update_groups(
             dy_state["previous_window"]=active_window_hex_id
     else:
         dy_state["previous_window"]=active_window_hex_id
-    
+
     # with open(filenpa_scriptjob_json, "w") as f:
         # f.write(json.dumps(dy_state, sort_keys=True, indent=4))
