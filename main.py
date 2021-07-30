@@ -28,6 +28,8 @@ if __name__ == "__main__":
         filenpa_args="config/options.json"
     ).get_argsns_dy_app()
 
+    active_window_hex_id=pkg.Windows.get_active_hex_id()
+
     filen_save_json="scriptjob_save.json"
     filen_scriptjob_json="scriptjob-{}.json".format(dy_app["version"])
     direpa_wrk=os.path.join(os.path.expanduser("~"), "fty", "wrk")
@@ -42,7 +44,10 @@ if __name__ == "__main__":
         filenpa_state,
     )
 
+
+
     pkg.update_groups(
+        active_window_hex_id,
         session.dy_settings["default_applications"],
         session.dy_state,
         session.actions,
@@ -66,6 +71,7 @@ if __name__ == "__main__":
             filen_save_json=filen_save_json,
             filenpa_save_json=args.path_json.value,
             group_names=args.open.values,
+            active_window_hex_id=active_window_hex_id,
         )
     elif args.open_explorer.here:
         pkg.open_explorer(session.dy_settings["default_applications"], session.dy_state, filen_scriptjob_json)
@@ -95,13 +101,14 @@ if __name__ == "__main__":
     elif args.switch_window.here:
         pkg.switch_window(session.dy_state, args.switch_window.value)
     elif args.execute.here:
-        pkg.execute(session.actions.obj_actions, session.dy_state)
+        pkg.execute(session.actions.obj_actions, session.dy_state, active_window_hex_id)
     elif args.search_open.here:
         filenpa_save_json=pkg.get_search_open(
             filen_save_json,
             args.search_open.value,
             direpa_wrk=direpa_wrk,
             index=args.index.value,
+            active_window_hex_id=active_window_hex_id,
         )
 
         pkg.open_json(
@@ -109,6 +116,7 @@ if __name__ == "__main__":
             dy_state=session.dy_state,
             filen_save_json=filen_save_json,
             filenpa_save_json=filenpa_save_json,
+            active_window_hex_id=active_window_hex_id,
         )
 
     session.save()
