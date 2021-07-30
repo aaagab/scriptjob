@@ -30,14 +30,16 @@ def open_json(
     filen_save_json,
     filenpa_save_json=None,
     group_names=[],
+    active_window_hex_id=None,
 ):
     if filenpa_save_json is None:
         direpa_current=os.getcwd()
-        # name, ext=os.path.splitext(filen_scriptjob_json)
-        # filen_save_json="{}_save{}".format(name, ext)
         filenpa_save_json=os.path.join(direpa_current, filen_save_json)
-    
-    obj_monitor=Monitors().get_active()
+
+    if active_window_hex_id is None:
+        active_window_hex_id=Windows.get_active_hex_id()
+
+    obj_monitor=Monitors().get_active(active_window_hex_id)
 
     if not os.path.exists(filenpa_save_json):
         message("error", "open: '{}' not found.".format(filenpa_save_json), obj_monitor)
@@ -52,7 +54,6 @@ def open_json(
         raw_text=re.sub("\$\{project_alias\}", project_alias, raw_text)
         data_open=json.loads(raw_text)
 
-    start_hex_id=Windows.get_active_hex_id()
 
 
     for field in ["windows", "groups"]:
@@ -151,8 +152,8 @@ def open_json(
             window["hex_id"]="create"
             set_commands(window, False, related_app_data)
 
-    windows_hex_ids=launch_windows(data_open["windows"], obj_monitor)
-    insert_scriptjob_groups_data(windows_hex_ids, data_open, dy_state, start_hex_id, obj_monitor, filenpa_save_json)
+    windows_hex_ids=launch_windows(data_open["windows"], obj_monitor, active_window_hex_id)
+    insert_scriptjob_groups_data(windows_hex_ids, data_open, dy_state, active_window_hex_id, obj_monitor, filenpa_save_json)
 
 def get_window_index(data_open, win_id):
     for w, window in enumerate(data_open["windows"]):
@@ -163,7 +164,7 @@ def insert_scriptjob_groups_data(
     windows_hex_ids,
     data_open,
     dy_state,
-    start_hex_id,
+    active_window_hex_id,
     obj_monitor,
     filenpa_save_json,
 ):
@@ -192,7 +193,7 @@ def insert_scriptjob_groups_data(
     Window(active_group["windows"][0]["hex_id"]).focus()
     
     set_previous(dy_state, "active_group", active_group["windows"][0]["hex_id"])
-    set_previous(dy_state, "global", start_hex_id)
+    set_previous(dy_state, "global", active_window_hex_id)
 
     message(
         "success", 
@@ -239,7 +240,7 @@ def set_commands(window, shared_window, related_app_data):
         if has_prop("rcfile_cmds", window):
             window["open_cmd"]+=" "+related_app_data["exec_cmds"]
 
-def launch_windows(windows_data, obj_monitor):
+def launch_windows(windows_data, obj_monitor, active_hex_id):
     windows_hex_ids=[]
     for window_data in windows_data:
         window=""
@@ -258,7 +259,7 @@ def launch_windows(windows_data, obj_monitor):
                 window_data["open_cmd"]=window_data["open_cmd"].format(PATH=filenpa_tmp)
 
             launch_window=Window_open(window_data["open_cmd"])
-            while not launch_window.has_window():
+            while not launch_window.has_window(active_hex_id):
                 user_continue=Prompt_boolean(dict(monitor=obj_monitor, title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(window_data["open_cmd"]))).loop().output
                 if not user_continue:
                     message("Scriptjob command 'open' aborted.", "error", obj_monitor)
