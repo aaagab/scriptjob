@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
-import os, sys
+from pprint import pprint
+import json
+import os
+import sys
 import configparser
 import contextlib
 
-from pprint import pprint
-from modules.guitools.guitools import Window, Windows, Regular_windows, Monitors
-from modules.bwins.bwins import Path_dialog
-from modules.json_config.json_config import Json_config
-from dev.helpers import message
-from dev.custom_check_box_list import Custom_check_box_list
-from modules.bwins.bwins import Prompt_boolean, Path_dialog, Input_box
-from dev.actions import Actions
+from .helpers import message
+from .custom_check_box_list import Custom_check_box_list
+
+from ..gpkgs.guitools import Window, Windows, Regular_windows, Monitors
+from ..gpkgs.bwins import Prompt_boolean, Path_dialog, Input_box, Path_dialog
 
 from tkinter.filedialog import askopenfilename, askdirectory
 
@@ -58,11 +58,19 @@ class Custom_path_dialog(Path_dialog):
 
         self.root.destroy()
 
-def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
+def save(
+    app_name,
+    filen_scriptjob_json,
+    dy_exes,
+    dy_state,
+    actions,
+    dst_path=None,
+    selected_group_names=[],
+):
     direpa_current=os.getcwd()
     active_monitor=Monitors().get_active()
         
-    filen_scriptjob_json=dy_app["filen_scriptjob_json"]
+    filen_scriptjob_json=filen_scriptjob_json
     filer_scriptjob_json, ext=os.path.splitext(filen_scriptjob_json)
     filen_save_json="{}_save{}".format(filer_scriptjob_json, ext)
     start_hex_id=Windows.get_active_hex_id()
@@ -101,7 +109,7 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
                 filenpa_save_json=filenpa_default
             else:
                 if os.path.isdir(path_user):
-                    filen_user=Input_box(dict(monitor=active_monitor, title=dy_app["name"], prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
+                    filen_user=Input_box(dict(monitor=active_monitor, title=app_name, prompt_text="Input save filename: ", default_text=filen_save_json)).loop().output
                     filenpa_save_json=os.path.join(path_user, filen_user)
                 else:
                     filenpa_save_json=path_user
@@ -132,11 +140,10 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
             filenpa_symlink
         )
 
-    data=scriptjob_conf.data
     dict_groups=[]
 
-    group_names=[group["name"] for group in data["groups"]]
-    groups_first_window_hex_ids=[group["windows"][0]["hex_id"] for group in data["groups"]]
+    group_names=[group["name"] for group in dy_state["groups"]]
+    groups_first_window_hex_ids=[group["windows"][0]["hex_id"] for group in dy_state["groups"]]
 
     if not group_names:
         message("warning", "There is no group to save", active_monitor)
@@ -168,21 +175,18 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
             sys.exit(1)
         
         selected_group_index=group_names.index(group_name)
-        dict_groups.append(data["groups"][selected_group_index])
+        dict_groups.append(dy_state["groups"][selected_group_index])
 
-   
-    
-    save_conf=Json_config(filenpa_save_json)
-    data_save=save_conf.data
-    data_save["groups"]=[]
-    data_save["windows"]=[]
-    data_save["diren"]=os.path.basename(direpa_current)
+    dy_conf=dict()
+
+    dy_conf["groups"]=[]
+    dy_conf["windows"]=[]
+    dy_conf["diren"]=os.path.basename(direpa_current)
 
     obj_windows=[]
     found_hex_ids=[]
     all_windows=Windows().sorted_by_class().filter_regular_type().windows
     all_windows_hex_ids=[window.hex_id for window in all_windows]
-    actions=Actions(dy_app)
 
     for group in dict_groups:
         tmp_group={}
@@ -194,11 +198,11 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
             if not window["hex_id"] in found_hex_ids:
                 found_hex_ids.append(window["hex_id"])
                 win_id=get_win_id(window["hex_id"], len(found_hex_ids)-1)
-                data_save["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], dy_app, active_monitor))
+                dy_conf["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], dy_exes, active_monitor))
             else: # if window already found ( in actions or other group )
                 win_id=get_win_id(window["hex_id"], found_hex_ids.index(window["hex_id"]))
                 # then add new group_name to this window
-                already_found_window=[win for win in data_save["windows"]][found_hex_ids.index(window["hex_id"])]
+                already_found_window=[win for win in dy_conf["windows"]][found_hex_ids.index(window["hex_id"])]
                 if group["name"] not in already_found_window["groups"]:
                     already_found_window["groups"].append(group["name"])
 
@@ -217,12 +221,12 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
                         if not parameter in found_hex_ids: # if window not already found
                             found_hex_ids.append(parameter)
                             win_id=get_win_id(parameter, len(found_hex_ids)-1)
-                            data_save["windows"].append(get_window_obj(parameter, win_id, group["name"], dy_app, active_monitor))
+                            dy_conf["windows"].append(get_window_obj(parameter, win_id, group["name"], dy_exes, active_monitor))
                             tmp_parameters.append("win_id:"+str(win_id))
                         else: # if window already found ( in actions or other group )
                             win_id=get_win_id(parameter, found_hex_ids.index(parameter))
                             tmp_parameters.append("win_id:"+str(win_id))
-                            already_found_window=[win for win in data_save["windows"]][found_hex_ids.index(parameter)]
+                            already_found_window=[win for win in dy_conf["windows"]][found_hex_ids.index(parameter)]
                             if group["name"] not in already_found_window["groups"]:
                                 already_found_window["groups"].append(group["name"])
                     elif selected_action.parameters[p]["type"] == "previous_window_hex_id":
@@ -235,9 +239,11 @@ def save(dy_app, scriptjob_conf, dst_path="", selected_group_names=[]):
                     parameters=tmp_parameters
                 ))
                     
-        data_save["groups"].append(tmp_group)
+        dy_conf["groups"].append(tmp_group)
 
-    save_conf.set_file_with_data()
+    with open(filenpa_save_json, "w") as f:
+        f.write(json.dumps(dy_conf, sort_keys=True, indent=4 ))
+
     Regular_windows.focus(start_hex_id)
     message("success", "Scriptjob saved '[{}]' to '{}'".format(
         ", ".join(selected_group_names),
@@ -271,9 +277,9 @@ def get_win_id(hex_id, index):
         index
     )
 
-def get_paths(dy_app, window, group_name, active_monitor):
+def get_paths(dy_exes, window, group_name, active_monitor):
     paths=[]
-    for exe in dy_app["exes"]:
+    for exe in dy_exes:
         if window.exe_name == exe["name"]:
             if "path_dialog" in exe and exe["path_dialog"] is True:
                 prompt_text="Select path(s) for:\n'{}' with title '{}'".format(
@@ -287,7 +293,7 @@ def get_paths(dy_app, window, group_name, active_monitor):
                         sys.exit(1)
     return paths
 
-def get_window_obj(hex_id, win_id, group_name, dy_app, active_monitor):
+def get_window_obj(hex_id, win_id, group_name, dy_exes, active_monitor):
     window=Window(hex_id)
 
     tmp_windows=dict(
@@ -297,7 +303,7 @@ def get_window_obj(hex_id, win_id, group_name, dy_app, active_monitor):
         name=window.name,
         filenpa_exe=window.filenpa_exe,
         cmd_parameters=window.command.replace(window.filenpa_exe, "").strip(),
-        paths=get_paths(dy_app, window, group_name, active_monitor),
+        paths=get_paths(dy_exes, window, group_name, active_monitor),
         groups=[group_name],
         tile=window.get_tile(),
         monitor=window.monitor.index

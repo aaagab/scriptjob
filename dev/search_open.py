@@ -1,16 +1,20 @@
 #!/usr/bin/env python3
-import os, sys
 from pprint import pprint
+import os
+import sys
 import shutil
 from distutils.dir_util import copy_tree
-import subprocess, shlex
+import subprocess
+import shlex
 
-from dev.helpers import message
-from modules.guitools.guitools import Monitors
-from modules.bwins.bwins import Check_box_list
+from .helpers import message, generate_group_name
+from .open import open_json
 
-def search_open(
-    dy_app, 
+from ..gpkgs.guitools import Monitors
+from ..gpkgs.bwins import Check_box_list
+
+def get_search_open(
+    filen_save_json,
     alias_app,
     direpa_wrk=None,
     index=None,
@@ -25,7 +29,7 @@ def search_open(
     indexes=[]
     count=0
     for elem in sorted(os.listdir(direpa_app_name)):
-        filenpa_json=os.path.join(direpa_app_name, elem, dy_app["filen_save_json"])
+        filenpa_json=os.path.join(direpa_app_name, elem, filen_save_json)
         if os.path.exists(filenpa_json):
             indexes.append("{}: {}".format(count, elem))
             filenpa_jsons.append(filenpa_json)
@@ -50,12 +54,6 @@ def search_open(
         message("warning", "Multiple Packages\nProvide index:\n'{}'".format("\n".join(indexes)), active_monitor)
         sys.exit(1)
 
-    print(indexes)
-    print(filenpa_json)
+    message("success","{} {} found.".format(alias_app, filen_save_json), active_monitor)
 
-    message("success","{} {} found.".format(alias_app, dy_app["filen_save_json"]), active_monitor)
-    command="scriptjob --open '{}'".format(filenpa_json)
-    process = subprocess.Popen(shlex.split(command), shell=False, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-    ( stdout, stderr ) = process.communicate()
-    if stderr:
-        message("app_error", stderr.decode("utf-8"), active_monitor)
+    return filenpa_json

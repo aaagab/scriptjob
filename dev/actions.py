@@ -1,44 +1,64 @@
 #!/usr/bin/env python3
 from pprint import pprint
-from dev.windows_list import Windows_list
-from modules.json_config.json_config import Json_config
-from modules.notification.notification import set_notification
-from modules.guitools.guitools import Regular_windows
-import modules.message.message as msg
-import sys, os
+import json
+import os
+import sys
+import time
+
+from .helpers import message
+from .windows_list import Windows_list
+
+from ..gpkgs.guitools import Regular_windows, Keyboard
 
 class Action(object):
-    def __init__(self, name):
+    def __init__(self, 
+        name, 
+        label, 
+        parameters,
+    ):
         self.name=name
-        self.label=""
+        self.label=label
+        self.parameters=parameters
 
     def print(self):
         pprint(vars(self))
 
+    def execute_terminal(self, src_hex_id, dst_hex_id):
+        src_kbd=Keyboard(int(src_hex_id, 16))
+        src_kbd.key("Ctrl+s")
+        time.sleep(.05)
+        Regular_windows.focus(dst_hex_id)
+        dst_kbd=Keyboard(int(dst_hex_id, 16))
+        dst_kbd.key("Up")
+        time.sleep(.05)
+        dst_kbd.key("Return")
+
+    def active_group_previous_window(self, window_hex_id):
+        Regular_windows.focus(window_hex_id)
+
+    def refresh_browser(self, src_hex_id, dst_hex_id):
+        src_kbd=Keyboard(int(src_hex_id, 16))
+        src_kbd.key("Ctrl+s")
+        Regular_windows.focus(dst_hex_id)
+        time.sleep(.01)
+        dst_kbd=Keyboard(int(dst_hex_id, 16))
+        dst_kbd.key("F5")
+
 class Actions(object):
-    def __init__(self, dy_app):
-        self.direpa_actions=dy_app["direpa_actions"].format(user_profile=os.path.expanduser("~"))
-        self.filenpa_actions_json=os.path.join(self.direpa_actions, dy_app["filen_actions_json"])
-        self.actions_data=Json_config(self.filenpa_actions_json).data
+    def __init__(self,
+        dy_actions,
+    ):
+        self.dy_actions=dy_actions
         self.obj_actions=[]
         self.set_actions()
         self.monitor=""
 
-    def set_action(self, name, filenpa_action):
-        action_index=[action["name"] for action in self.actions_data["actions"]].index(name)
-        dict_action=self.actions_data["actions"][action_index]
-        action=Action(name)
-        action.label=dict_action["label"]
-        action.filenpa=filenpa_action
-        action.parameters=dict_action["parameters"]
-        self.obj_actions.append(action)
-
     def set_actions(self):
-        for elem in os.listdir(self.direpa_actions):
-            path_elem=os.path.join(self.direpa_actions, elem)
-            if os.path.isfile(path_elem):
-                if path_elem != self.filenpa_actions_json:
-                    self.set_action(elem, path_elem)
+        for dy_action in self.dy_actions:
+            name=dy_action["name"]
+            label=dy_action["label"]
+            parameters=dy_action["parameters"]
+            self.obj_actions.append(Action(name, label, parameters))
 
     def implement(self, obj_action, obj_monitor, group_name, selected_window_hex_id, quick_params=[]):
 
@@ -97,8 +117,7 @@ class Actions(object):
 
         if not parameter_windows:
             msg_error="In actions, implement, filter_windows: there is no parameter_windows with exe_name '{}'".format(parameter["exe_names"])
-            set_notification(msg_error, "warning", obj_monitor)
-            msg.warning(msg_error)
+            message("warning", msg_error, obj_monitor)
             parameter_windows=None
 
         return parameter_windows
