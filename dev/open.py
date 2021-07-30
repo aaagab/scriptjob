@@ -10,14 +10,13 @@ import copy
 import tempfile
 import getpass
 
-from modules.guitools.guitools import Window, Windows, Regular_windows, Monitors, Window_open
-from modules.bwins.bwins import Prompt_boolean
-from modules.json_config.json_config import Json_config
-from modules.timeout.timeout import Timeout
-from dev.windows_list import Windows_list
-import dev.app_parameters as app_params
-from dev.helpers import message, generate_group_name
-from dev.set_previous import set_previous
+from . import app_parameters as app_params
+from .helpers import message, generate_group_name
+from .set_previous import set_previous
+from .windows_list import Windows_list
+
+from ..gpkgs.guitools import Window, Windows, Regular_windows, Monitors, Window_open
+from ..gpkgs.bwins import Prompt_boolean
 
 def has_prop(prop, obj):
     if prop in obj and obj[prop]:
@@ -25,12 +24,17 @@ def has_prop(prop, obj):
     else:
         return False
 
-def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
-    if not filenpa_save_json:
+def open_json(
+    dy_exes,
+    dy_state,
+    filen_save_json,
+    filenpa_save_json=None,
+    group_names=[],
+):
+    if filenpa_save_json is None:
         direpa_current=os.getcwd()
-        filen_scriptjob_json=dy_app["filen_scriptjob_json"]
-        name, ext=os.path.splitext(filen_scriptjob_json)
-        filen_save_json="{}_save{}".format(name, ext)
+        # name, ext=os.path.splitext(filen_scriptjob_json)
+        # filen_save_json="{}_save{}".format(name, ext)
         filenpa_save_json=os.path.join(direpa_current, filen_save_json)
     
     obj_monitor=Monitors().get_active()
@@ -50,13 +54,11 @@ def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
 
     start_hex_id=Windows.get_active_hex_id()
 
-    if not has_prop("windows", data_open):
-        message("error", "open: no windows in '{}'.".format(filenpa_save_json), obj_monitor)
-        sys.exit(1)
 
-    if not has_prop("groups", data_open):
-        message("error", "open: no groups in '{}'.".format(filenpa_save_json), obj_monitor)
-        sys.exit(1)
+    for field in ["windows", "groups"]:
+        if field not in data_open:
+            message("error", "open: field '{}' not found in state file '{}'.".format(field, filenpa_save_json), obj_monitor)
+            sys.exit(1)
 
     in_file_group_names=[group["name"] for group in data_open["groups"]]
 
@@ -100,7 +102,7 @@ def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
         has_selected_shared_window=False
         
         existing_related_windows=copy.deepcopy([win for win in existing_windows.windows if win["exe_name"] == window["exe"]])
-        related_app_data=[exe for exe in dy_app["exes"] if exe["name"] == window["exe"]]
+        related_app_data=[exe for exe in dy_exes if exe["name"] == window["exe"]]
         related_app_data=related_app_data[0] if related_app_data else {}
 
         if has_prop("shared", related_app_data):
@@ -150,17 +152,23 @@ def open_json(dy_app, scriptjob_conf, filenpa_save_json="", group_names=[]):
             set_commands(window, False, related_app_data)
 
     windows_hex_ids=launch_windows(data_open["windows"], obj_monitor)
-    insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor, filenpa_save_json)
+    insert_scriptjob_groups_data(windows_hex_ids, data_open, dy_state, start_hex_id, obj_monitor, filenpa_save_json)
 
 def get_window_index(data_open, win_id):
     for w, window in enumerate(data_open["windows"]):
         if window["id"] == win_id:
             return w
 
-def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, start_hex_id, obj_monitor, filenpa_save_json):
-    scriptjob_data=scriptjob_conf.data
+def insert_scriptjob_groups_data(
+    windows_hex_ids,
+    data_open,
+    dy_state,
+    start_hex_id,
+    obj_monitor,
+    filenpa_save_json,
+):
     for group in data_open["groups"]:
-        group["name"]=generate_group_name(group["name"], scriptjob_conf)
+        group["name"]=generate_group_name(group["name"], dy_state["groups"])
         group["direpa_save_json"]=os.path.dirname(filenpa_save_json)
         for window in group["windows"]:
             window_index=get_window_index(data_open, window["id"])
@@ -173,22 +181,18 @@ def insert_scriptjob_groups_data(windows_hex_ids, data_open, scriptjob_conf, sta
                         window_index=get_window_index(data_open, param_win_id.group(1))
                         parameter=windows_hex_ids[window_index]
                         action["parameters"][p]=windows_hex_ids[window_index]
-        scriptjob_data["groups"].append(group)
+        dy_state["groups"].append(group)
 
     if has_prop("active_group", data_open):
-        scriptjob_data["active_group"]=data_open["active_group"]
+        dy_state["active_group"]=data_open["active_group"]
     else:
-        scriptjob_data["active_group"]=data_open["groups"][0]["name"]
+        dy_state["active_group"]=data_open["groups"][0]["name"]
 
-    # scriptjob_conf.set_file_with_data()
-
-    active_group=[group for group in scriptjob_data["groups"] if group["name"] == scriptjob_data["active_group"]][0]
+    active_group=[group for group in dy_state["groups"] if group["name"] == dy_state["active_group"]][0]
     Window(active_group["windows"][0]["hex_id"]).focus()
     
-    set_previous(scriptjob_conf, "active_group", active_group["windows"][0]["hex_id"])
-    set_previous(scriptjob_conf, "global", start_hex_id)
-
-    # scriptjob_conf.set_file_with_data()
+    set_previous(dy_state, "active_group", active_group["windows"][0]["hex_id"])
+    set_previous(dy_state, "global", start_hex_id)
 
     message(
         "success", 

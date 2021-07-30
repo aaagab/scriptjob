@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
-from modules.bwins.bwins import Check_box_list
-from modules.guitools.guitools import Regular_windows
 import time
+from ..gpkgs.bwins import Check_box_list
+from ..gpkgs.guitools import Regular_windows
 
 class Custom_check_box_list(Check_box_list):
     def __init__(self, options, windows_hex_ids):

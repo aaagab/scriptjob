@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-import os, sys
 from pprint import pprint
+import json
+import os
+import sys
 
-from dev.helpers import message
-from modules.guitools.guitools import Windows, Window, Regular_windows
-from dev.actions import Actions
+from ..gpkgs.guitools import Windows, Window, Regular_windows
 
 def get_window_name(existing_windows, hex_id):
     win_index=[w["hex_id"] for w in existing_windows].index(hex_id)
@@ -13,41 +13,42 @@ def get_window_name(existing_windows, hex_id):
 
     return win_name
 
-def update_groups(dy_data, scriptjob_conf):
-    obj_actions=Actions(dy_data).obj_actions
+def update_groups(
+    default_applications,
+    dy_state,
+    actions,
+):
     existing_windows=Regular_windows().windows
     active_window_hex_id=Windows.get_active_hex_id()
-
-    data=scriptjob_conf.data
     windows_hex_ids_to_remove=[]
     groups_indexes_to_remove=[]
     
-    if not "active_group" in data:
-        data["active_group"]=""
+    if not "active_group" in dy_state:
+        dy_state["active_group"]=""
 
-    if not "previous_window" in data:
-        data["previous_window"]=""
+    if not "previous_window" in dy_state:
+        dy_state["previous_window"]=""
 
-    if not "focus" in data:
-        data["focus"]={}
+    if not "focus" in dy_state:
+        dy_state["focus"]={}
 
-    for cmd_alias in dy_data["default"]:
-        if not cmd_alias in data["focus"]:
-            data["focus"][cmd_alias]=""
+    for cmd_alias in default_applications:
+        if not cmd_alias in dy_state["focus"]:
+            dy_state["focus"][cmd_alias]=""
 
-        if data["focus"][cmd_alias]:
-            if not Windows.exists(data["focus"][cmd_alias]):
-                data["focus"][cmd_alias]=""
+        if dy_state["focus"][cmd_alias]:
+            if not Windows.exists(dy_state["focus"][cmd_alias]):
+                dy_state["focus"][cmd_alias]=""
         
-    if not "groups" in data or not data["groups"]:
-        if "active_group" in data:
-            data["active_group"]=""
+    if not "groups" in dy_state or not dy_state["groups"]:
+        if "active_group" in dy_state:
+            dy_state["active_group"]=""
 
-        if not "groups" in data:
-            data["groups"]=[]
+        if not "groups" in dy_state:
+            dy_state["groups"]=[]
     else:
         tmp_groups=[]
-        for group in data["groups"]:
+        for group in dy_state["groups"]:
             tmp_group={}
             for w, window in enumerate(group["windows"]):
                 if window["hex_id"] in windows_hex_ids_to_remove:
@@ -91,8 +92,8 @@ def update_groups(dy_data, scriptjob_conf):
 
                 actions_win_hex_ids=set()
                 for a, action in enumerate(window["actions"]):
-                    index_action=[act.name for act in obj_actions].index(action["name"])
-                    current_action=obj_actions[index_action]
+                    index_action=[act.name for act in actions.obj_actions].index(action["name"])
+                    current_action=actions.obj_actions[index_action]
                     tmp_group["windows"][-1]["actions"].append(dict(
                         name=action["name"],
                         parameters=[]
@@ -124,23 +125,24 @@ def update_groups(dy_data, scriptjob_conf):
                 
                 tmp_groups.append(tmp_group)
                 
-        data["groups"]=tmp_groups
+        dy_state["groups"]=tmp_groups
 
         
-    if data["groups"]:
-        group_names=[group["name"] for group in data["groups"]]
-        if data["active_group"]:
-            if data["active_group"] not in group_names:
-                data["active_group"]= data["groups"][-1]["name"]
+    if dy_state["groups"]:
+        group_names=[group["name"] for group in dy_state["groups"]]
+        if dy_state["active_group"]:
+            if dy_state["active_group"] not in group_names:
+                dy_state["active_group"]= dy_state["groups"][-1]["name"]
         else:
-            data["active_group"]= data["groups"][-1]["name"]
+            dy_state["active_group"]= dy_state["groups"][-1]["name"]
     else:
-        data["active_group"]=""
+        dy_state["active_group"]=""
 
-    if data["previous_window"]:
-        if not Windows.exists(data["previous_window"]):
-            data["previous_window"]=active_window_hex_id
+    if dy_state["previous_window"]:
+        if not Windows.exists(dy_state["previous_window"]):
+            dy_state["previous_window"]=active_window_hex_id
     else:
-        data["previous_window"]=active_window_hex_id
+        dy_state["previous_window"]=active_window_hex_id
     
-    scriptjob_conf.set_file_with_data()
+    # with open(filenpa_scriptjob_json, "w") as f:
+        # f.write(json.dumps(dy_state, sort_keys=True, indent=4))
