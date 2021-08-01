@@ -5,14 +5,13 @@ import os
 import sys
 import time
 
-# from tkinter import *
-from .helpers import generate_group_name, message
+from . import notify
+from .helpers import generate_group_name
 from .set_previous import set_previous
 from .windows_list import Windows_list
 
 from ..gpkgs.bwins import Input_box, Radio_button_list
-from ..gpkgs.guitools import Monitors, Windows, Regular_windows
-# from dev.actions import *
+from ..gpkgs.guitools import Regular_windows
 
 def get_selected_windows(discarded_windows):
     selected_windows=[]
@@ -27,16 +26,16 @@ def add_group(
     app_name,
     actions,
     dy_state,
+    active_monitor,
+    active_window_hex_id,
 ):
     dy_state=dy_state
-    start_hex_id=Windows.get_active_hex_id()
-    obj_monitor=Monitors().get_active()
 
-    input_box=Input_box(dict(monitor=obj_monitor, title=app_name, prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", dy_state["groups"])))
+    input_box=Input_box(dict(monitor=active_monitor, title=app_name, prompt_text="Input Group Name: ", default_text=generate_group_name("scriptjob", dy_state["groups"])))
     group_name=generate_group_name(input_box.loop().output, dy_state["groups"])
     
     if group_name == "_aborted":
-        message("warning", "Scriptjob 'add' cancelled", obj_monitor)
+        notify.warning("Scriptjob 'add' cancelled", active_monitor)
         sys.exit(1)
 
     obj_group=dict(name=group_name)
@@ -50,20 +49,20 @@ def add_group(
     
         if not windows_names:
             if obj_group["windows"]:            
-                message("warning", "There is no more windows to process", obj_monitor)
+                notify.warning("There is no more windows to process", active_monitor)
             else:
-                message("warning", "There is no windows to process", obj_monitor)
+                notify.warning("There is no windows to process", active_monitor)
             break
     
         win_index=Windows_list(dict(
             items=windows_names, 
             prompt_text="Choose a window:", 
-            monitor=obj_monitor, 
+            monitor=active_monitor, 
             checked=len(windows_names)-1, 
             title="Group: {}".format(group_name)), selected_windows_hex_ids).loop().output
 
         if win_index == "_aborted":
-            message("warning", "Scriptjob 'add' cancelled", obj_monitor)
+            notify.warning("Scriptjob 'add' cancelled", active_monitor)
             sys.exit(1)
 
         if win_index == "_done":
@@ -94,7 +93,7 @@ def add_group(
             action_list=Windows_list(dict(
                 items=action_labels,
                 checked=0, 
-                monitor=obj_monitor, 
+                monitor=active_monitor, 
                 prompt_text="Add an action for window '{}':".format(selected_window["name"]), 
                 title="Group: {}".format(group_name)
                 ))
@@ -115,7 +114,7 @@ def add_group(
 
             selected_obj_action=actions.obj_actions[action_index]
 
-            parameters=actions.implement(selected_obj_action, obj_monitor, group_name, selected_window["hex_id"])
+            parameters=actions.implement(selected_obj_action, active_monitor, group_name, selected_window["hex_id"])
             if parameters is None:
                 continue
             
@@ -136,7 +135,7 @@ def add_group(
         if obj_group["windows"]:
             group_names=[group["name"] for group in dy_state["groups"]]
             if group_names:
-                set_previous(dy_state, "active_group", start_hex_id)
+                set_previous(dy_state, "active_group", active_window_hex_id)
 
             Regular_windows.focus(obj_group["windows"][0]["hex_id"])
             obj_group["previous_window"]=obj_group["windows"][0]["hex_id"]
@@ -144,6 +143,6 @@ def add_group(
             dy_state["groups"].append(obj_group)
             dy_state["active_group"]=group_name
 
-            set_previous(dy_state, "global", start_hex_id)
-            message("success", "scriptjob group '{}' added.".format(group_name), obj_monitor)
+            set_previous(dy_state, "global", active_window_hex_id)
+            notify.success("scriptjob group '{}' added.".format(group_name), active_monitor)
 

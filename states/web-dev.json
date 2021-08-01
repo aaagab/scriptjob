@@ -1,0 +1,33 @@
+[
+    {
+        "application": "editor",
+        "actions": [
+            {
+                "name": "refresh_browser",
+                "parameters": ["win_id:editor", "win_id:browser"]
+            }
+        ],
+        "parameters": {
+            "new-window": "{PATH_APP}"
+        },
+        "id": "editor",
+        "monitor": 1,
+        "tile": "maximize"
+    },
+    {
+        "application": "browser",
+        "actions": [
+            {
+                "name": "active_group_previous_window",
+                "parameters": ["previous_window_hex_id"]
+            }
+        ],
+        "parameters": {
+            "new-window": "{URL}"
+        },
+        "id": "browser",
+        "monitor": 0,
+        "rcfile_cmds": ["cd \"{PATH_SRC}\""],
+        "tile": "maximize"
+    }
+]

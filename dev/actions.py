@@ -5,7 +5,7 @@ import os
 import sys
 import time
 
-from .helpers import message
+from . import notify
 from .windows_list import Windows_list
 
 from ..gpkgs.guitools import Regular_windows, Keyboard
@@ -117,7 +117,7 @@ class Actions(object):
 
         if not parameter_windows:
             msg_error="In actions, implement, filter_windows: there is no parameter_windows with exe_name '{}'".format(parameter["exe_names"])
-            message("warning", msg_error, obj_monitor)
+            notify.warning(msg_error, obj_monitor)
             parameter_windows=None
 
         return parameter_windows

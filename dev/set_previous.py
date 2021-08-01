@@ -3,8 +3,6 @@ from pprint import pprint
 import os
 import sys
 
-from ..gpkgs.guitools import Windows, Window
-
 def set_previous(dy_state, previous_type, start_hex_id):
     if previous_type == "global":
         dy_state["previous_window"]=start_hex_id

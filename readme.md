@@ -28,6 +28,7 @@ builtin-in states:
 So then for me I give a path and a builtin-state and it should go there and add the builtin-state to the scriptjob session
 So open function is going to be kept the difference is a template is going to be available in scriptjob and also application are going to be defined with {browser} and {editor}
 
+get application class: wmctrl -lGpx
 
 
 

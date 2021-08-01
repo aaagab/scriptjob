@@ -5,7 +5,7 @@ import json
 import os
 import sys
 
-from ..gpkgs.guitools import Windows, Window, Regular_windows
+from ..gpkgs.guitools import Windows, Regular_windows
 
 def get_window_name(existing_windows, hex_id):
     win_index=[w["hex_id"] for w in existing_windows].index(hex_id)

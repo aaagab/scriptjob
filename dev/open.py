@@ -11,11 +11,12 @@ import tempfile
 import getpass
 
 from . import app_parameters as app_params
-from .helpers import message, generate_group_name
+from . import notify
+from .helpers import generate_group_name
 from .set_previous import set_previous
 from .windows_list import Windows_list
 
-from ..gpkgs.guitools import Window, Windows, Regular_windows, Monitors, Window_open
+from ..gpkgs.guitools import Window, Regular_windows, Window_open
 from ..gpkgs.bwins import Prompt_boolean
 
 def has_prop(prop, obj):
@@ -27,22 +28,19 @@ def has_prop(prop, obj):
 def open_json(
     dy_exes,
     dy_state,
+    active_monitor,
+    obj_monitors,
+    active_window_hex_id,
     filen_save_json,
     filenpa_save_json=None,
     group_names=[],
-    active_window_hex_id=None,
 ):
     if filenpa_save_json is None:
         direpa_current=os.getcwd()
         filenpa_save_json=os.path.join(direpa_current, filen_save_json)
 
-    if active_window_hex_id is None:
-        active_window_hex_id=Windows.get_active_hex_id()
-
-    obj_monitor=Monitors().get_active(active_window_hex_id)
-
     if not os.path.exists(filenpa_save_json):
-        message("error", "open: '{}' not found.".format(filenpa_save_json), obj_monitor)
+        notify.error("open: '{}' not found.".format(filenpa_save_json), active_monitor)
         sys.exit(1)
 
     filenpa_save_json=os.path.abspath(filenpa_save_json)
@@ -54,17 +52,15 @@ def open_json(
         raw_text=re.sub("\$\{project_alias\}", project_alias, raw_text)
         data_open=json.loads(raw_text)
 
-
-
     for field in ["windows", "groups"]:
         if field not in data_open:
-            message("error", "open: field '{}' not found in state file '{}'.".format(field, filenpa_save_json), obj_monitor)
+            notify.error("open: field '{}' not found in state file '{}'.".format(field, filenpa_save_json), active_monitor)
             sys.exit(1)
 
     in_file_group_names=[group["name"] for group in data_open["groups"]]
 
     if not in_file_group_names:
-        message("error", "There is no group to open", obj_monitor)
+        notify.error("There is no group to open", active_monitor)
         sys.exit(1)
 
     if group_names:
@@ -73,7 +69,7 @@ def open_json(
         group_names=set(group_names)
         for group_name in group_names:
             if not group_name in in_file_group_names:
-                message("error", "There is no group with name '{}' to open".format(group_name), obj_monitor)
+                notify.error("There is no group with name '{}' to open".format(group_name), active_monitor)
                 sys.exit(1)
 
         for group in data_open["groups"]:
@@ -125,7 +121,7 @@ def open_json(
                         window["exe"],
                         ", ".join(window["groups"])+"':"
                         ), 
-                    monitor=obj_monitor, 
+                    monitor=active_monitor, 
                     checked=len(existing_related_windows_names)-1, 
                     title="Scriptjob Open"), existing_related_windows_hex_ids)
 
@@ -134,7 +130,7 @@ def open_json(
                 win_index=win_list.loop().output
 
                 if win_index == "_aborted":
-                    message("warning", "Scriptjob 'open' cancelled", obj_monitor)
+                    notify.warning("Scriptjob 'open' cancelled", active_monitor)
                     sys.exit(1)
 
                 if win_index != len(existing_related_windows_names)-1:
@@ -152,8 +148,8 @@ def open_json(
             window["hex_id"]="create"
             set_commands(window, False, related_app_data)
 
-    windows_hex_ids=launch_windows(data_open["windows"], obj_monitor, active_window_hex_id)
-    insert_scriptjob_groups_data(windows_hex_ids, data_open, dy_state, active_window_hex_id, obj_monitor, filenpa_save_json)
+    windows_hex_ids=launch_windows(data_open["windows"], active_monitor, obj_monitors)
+    insert_scriptjob_groups_data(windows_hex_ids, data_open, dy_state, active_window_hex_id, active_monitor, obj_monitors, filenpa_save_json)
 
 def get_window_index(data_open, win_id):
     for w, window in enumerate(data_open["windows"]):
@@ -165,7 +161,8 @@ def insert_scriptjob_groups_data(
     data_open,
     dy_state,
     active_window_hex_id,
-    obj_monitor,
+    active_monitor,
+    obj_monitors,
     filenpa_save_json,
 ):
     for group in data_open["groups"]:
@@ -190,16 +187,14 @@ def insert_scriptjob_groups_data(
         dy_state["active_group"]=data_open["groups"][0]["name"]
 
     active_group=[group for group in dy_state["groups"] if group["name"] == dy_state["active_group"]][0]
-    Window(active_group["windows"][0]["hex_id"]).focus()
+    Window(active_group["windows"][0]["hex_id"], obj_monitors=obj_monitors).focus()
     
     set_previous(dy_state, "active_group", active_group["windows"][0]["hex_id"])
     set_previous(dy_state, "global", active_window_hex_id)
 
-    message(
-        "success", 
-        "Scriptjob group(s) ['{}'] opened.".format("', '".join([group["name"] for group in data_open["groups"]])
-        ),
-        obj_monitor)
+    notify.success(
+        "Scriptjob group(s) ['{}'] opened.".format("', '".join([group["name"] for group in data_open["groups"]])),
+        active_monitor)
     
 def set_commands(window, shared_window, related_app_data):
     window["open_cmd"]=window["filenpa_exe"]
@@ -240,7 +235,7 @@ def set_commands(window, shared_window, related_app_data):
         if has_prop("rcfile_cmds", window):
             window["open_cmd"]+=" "+related_app_data["exec_cmds"]
 
-def launch_windows(windows_data, obj_monitor, active_hex_id):
+def launch_windows(windows_data, active_monitor, obj_monitors):
     windows_hex_ids=[]
     for window_data in windows_data:
         window=""
@@ -258,11 +253,11 @@ def launch_windows(windows_data, obj_monitor, active_hex_id):
 
                 window_data["open_cmd"]=window_data["open_cmd"].format(PATH=filenpa_tmp)
 
-            launch_window=Window_open(window_data["open_cmd"])
-            while not launch_window.has_window(active_hex_id):
-                user_continue=Prompt_boolean(dict(monitor=obj_monitor, title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(window_data["open_cmd"]))).loop().output
+            launch_window=Window_open(window_data["open_cmd"], obj_monitors=obj_monitors)
+            while not launch_window.has_window():
+                user_continue=Prompt_boolean(dict(monitor=active_monitor, title="Scriptjob open", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to wait?".format(window_data["open_cmd"]))).loop().output
                 if not user_continue:
-                    message("Scriptjob command 'open' aborted.", "error", obj_monitor)
+                    notify.error("Scriptjob command 'open' aborted.", active_monitor)
                     sys.exit(1)
             
             window=launch_window.window
@@ -270,7 +265,7 @@ def launch_windows(windows_data, obj_monitor, active_hex_id):
                 os.remove(filenpa_tmp)
 
         else:
-            window=Window(window_data["hex_id"])
+            window=Window(window_data["hex_id"], obj_monitors=obj_monitors)
 
         windows_hex_ids.append(window.hex_id)
     
@@ -282,11 +277,10 @@ def launch_windows(windows_data, obj_monitor, active_hex_id):
                 os.system(cmd)
 
         if window_data["hex_id"] == "create":
-            monitors=Monitors().monitors
-            if len(monitors) == 1:
+            if len(obj_monitors.monitors) == 1:
                 window_data["monitor"]=0
             else:
-                if window_data["monitor"] > len(monitors)-1:
+                if window_data["monitor"] > len(obj_monitors.monitors)-1:
                     window_data["monitor"]=0
 
             window.tile(window_data["tile"], window_data["monitor"])

@@ -6,7 +6,6 @@ __version__= "9.1.0"
 
 from .gpkgs.options import Options
 from .gpkgs.etconf import Etconf
-from .gpkgs.guitools import Windows
 from .dev.update_groups import update_groups
 from .dev.add_group import add_group
 from .dev.execute import execute

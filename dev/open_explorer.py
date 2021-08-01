@@ -4,16 +4,21 @@ import os
 import sys
 import time
 
-from .helpers import message, generate_group_name
+from . import notify
+from .helpers import generate_group_name
 from .set_previous import set_previous
 
 from ..gpkgs.bwins import Prompt_boolean
-from ..gpkgs.guitools import Monitors, Window_open, Window, Windows
+from ..gpkgs.guitools import Window_open, Window
 
-def open_explorer(default_applications, dy_state, filen_scriptjob_json):
-    active_hex_id=Windows.get_active_hex_id()
-    obj_monitor=Monitors().get_active()
-
+def open_explorer(
+    default_applications,
+    dy_state,
+    active_monitor,
+    active_window_hex_id,
+    obj_monitors,
+    filen_scriptjob_json,
+):
     dy_active_group=""
     direpa_group=""
     for group in dy_state["groups"]:
@@ -22,34 +27,34 @@ def open_explorer(default_applications, dy_state, filen_scriptjob_json):
             break
     
     if not dy_active_group:
-        message("error", "There are no groups in '{}'".format(filen_scriptjob_json), obj_monitor)
+        notify.error("There are no groups in '{}'".format(filen_scriptjob_json), active_monitor)
         sys.exit(1)
 
     if not "direpa_save_json" in dy_active_group:
-        message("error", "There is no direpa_save_json in active group '{}' in '{}'".format(dy_state["active_group"], filen_scriptjob_json), obj_monitor)
+        notify.error("There is no direpa_save_json in active group '{}' in '{}'".format(dy_state["active_group"], filen_scriptjob_json), active_monitor)
         sys.exit(1)
     else:
         direpa_group=dy_active_group["direpa_save_json"]
 
     if not dy_state["focus"]["explorer"]:
-        launch_window=Window_open(default_applications["explorer"])
+        launch_window=Window_open(default_applications["explorer"], obj_monitors=obj_monitors)
         while not launch_window.has_window():
-            user_continue=Prompt_boolean(dict(monitor=obj_monitor, title="Scriptjob open explorer", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to retry?".format(default_applications["explorer"]))).loop().output
+            user_continue=Prompt_boolean(dict(monitor=active_monitor, title="Scriptjob open explorer", prompt_text="Can't open a window with cmd\n'{}'\nDo you want to wait?".format(default_applications["explorer"]))).loop().output
             if not user_continue:
-                message("Scriptjob command 'open explorer' aborted.", "error", obj_monitor)
+                notify.error("Scriptjob command 'open explorer' aborted.", active_monitor)
                 sys.exit(1)
         
         window=launch_window.window
         dy_state["focus"]["explorer"]=window.hex_id
-        open_explorer_at_path(dy_state, active_hex_id, window, direpa_group)
+        open_explorer_at_path(dy_state, active_window_hex_id, window, direpa_group)
 
     else:
-        window=Window(dy_state["focus"]["explorer"])
-        open_explorer_at_path(dy_state, active_hex_id, window, direpa_group)
+        window=Window(dy_state["focus"]["explorer"], obj_monitors=obj_monitors)
+        open_explorer_at_path(dy_state, active_window_hex_id, window, direpa_group)
 
-def open_explorer_at_path(dy_state, active_hex_id, window, direpa_group):
-    if window.hex_id != active_hex_id:
-        set_previous(dy_state, "global", active_hex_id)
+def open_explorer_at_path(dy_state, active_window_hex_id, window, direpa_group):
+    if window.hex_id != active_window_hex_id:
+        set_previous(dy_state, "global", active_window_hex_id)
     window.focus()
 
     time.sleep(.3)
