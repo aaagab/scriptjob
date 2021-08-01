@@ -28,8 +28,6 @@ if __name__ == "__main__":
         filenpa_args="config/options.json"
     ).get_argsns_dy_app()
 
-    active_window_hex_id=pkg.Windows.get_active_hex_id()
-
     filen_save_json="scriptjob_save.json"
     filen_scriptjob_json="scriptjob-{}.json".format(dy_app["version"])
     direpa_wrk=os.path.join(os.path.expanduser("~"), "fty", "wrk")
@@ -39,57 +37,115 @@ if __name__ == "__main__":
     os.makedirs(direpa_tmp, exist_ok=True)
     filenpa_state=os.path.join(direpa_tmp, filen_scriptjob_json)
 
+
     session=pkg.Session(
         filenpa_settings,
         filenpa_state,
     )
 
-
-
     pkg.update_groups(
-        active_window_hex_id,
+        session.active_window_hex_id,
         session.dy_settings["default_applications"],
         session.dy_state,
         session.actions,
     )
 
     if args.add_group.here:
-        pkg.add_group(dy_app["name"], session.actions, session.dy_state)
+        pkg.add_group(
+            dy_app["name"],
+            session.actions,
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+        )
     elif args.focus_command.here:
-        pkg.focus_command(session.dy_settings["default_applications"], session.dy_state, args.focus_command.value)
+        pkg.focus_command(
+            session.dy_settings["default_applications"],
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            session.obj_monitors,
+            args.focus_command.value,
+        )
     elif args.close.here:
         pkg.close(
             session.dy_settings["default_applications"],
             session.dy_state,
+            session.active_monitor,
+            session.obj_monitors,
             session.actions,
             to_close_group_names=args.close.values,
         )
+
+        pkg.update_groups(
+            session.active_window_hex_id,
+            session.dy_settings["default_applications"],
+            session.dy_state,
+            session.actions,
+        )
     elif args.open.here:
+
+        filenpa_save_json=None
+        if args.search.here:
+            filenpa_save_json=pkg.get_search_open(
+                filen_save_json,
+                session.active_monitor,
+                args.search.value,
+                direpa_wrk=direpa_wrk,
+                index=args.index.value,
+                active_window_hex_id=session.active_window_hex_id,
+            )
+        else:
+            filenpa_save_json=args.path_json.value
+
         pkg.open_json(
             dy_exes=session.dy_settings["exes"],
             dy_state=session.dy_state,
+            active_monitor=session.active_monitor,
+            obj_monitors=session.obj_monitors,
+            active_window_hex_id=session.active_window_hex_id,
             filen_save_json=filen_save_json,
-            filenpa_save_json=args.path_json.value,
+            filenpa_save_json=filenpa_save_json,
             group_names=args.open.values,
-            active_window_hex_id=active_window_hex_id,
         )
     elif args.open_explorer.here:
-        pkg.open_explorer(session.dy_settings["default_applications"], session.dy_state, filen_scriptjob_json)
+        pkg.open_explorer(
+            session.dy_settings["default_applications"],
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            session.obj_monitors,
+            filen_scriptjob_json,
+        )
     elif args.switch_group.here:
         action="group"
         if args.previous.here:
             action="previous"
         elif args.next.here:
             action="next"
-        pkg.switch_group(session.dy_state, action=action, group_name=args.switch_group.value)
+        pkg.switch_group(
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            action,
+            group_name=args.switch_group.value
+        )
     elif args.previous_window.here:
-        pkg.previous_window(session.dy_state, args.previous_window.value)
+        pkg.previous_window(
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            args.previous_window.value,
+        )
     elif args.save.here:
         pkg.save(
             dy_app["name"],
             filen_scriptjob_json,
             session.dy_settings["exes"],
             session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            session.obj_monitors,
             session.actions,
             dst_path=args.path_json.value,
             selected_group_names=args.save.values,
@@ -97,26 +153,28 @@ if __name__ == "__main__":
     elif args.get_active_group_path.here:
         print(pkg.get_active_group_path(session.dy_state))
     elif args.quick_action.here:
-        pkg.quick_action(dy_app["name"], session.actions, session.dy_state, args.quick_action.value)
-    elif args.switch_window.here:
-        pkg.switch_window(session.dy_state, args.switch_window.value)
-    elif args.execute.here:
-        pkg.execute(session.actions.obj_actions, session.dy_state, active_window_hex_id)
-    elif args.search_open.here:
-        filenpa_save_json=pkg.get_search_open(
-            filen_save_json,
-            args.search_open.value,
-            direpa_wrk=direpa_wrk,
-            index=args.index.value,
-            active_window_hex_id=active_window_hex_id,
+        pkg.quick_action(
+            dy_app["name"],
+            session.actions,
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            session.obj_monitors,
+            args.quick_action.value,
         )
-
-        pkg.open_json(
-            dy_exes=session.dy_settings["exes"],
-            dy_state=session.dy_state,
-            filen_save_json=filen_save_json,
-            filenpa_save_json=filenpa_save_json,
-            active_window_hex_id=active_window_hex_id,
+    elif args.switch_window.here:
+        pkg.switch_window(
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
+            args.switch_window.value,
+        )
+    elif args.execute.here:
+        pkg.execute(
+            session.actions.obj_actions,
+            session.dy_state,
+            session.active_monitor,
+            session.active_window_hex_id,
         )
 
     session.save()

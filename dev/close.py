@@ -3,30 +3,30 @@ from pprint import pprint
 import os
 import sys
 
+from . import notify
 from .custom_check_box_list import Custom_check_box_list
-from .helpers import message
 from .update_groups import update_groups
 
-from ..gpkgs.guitools import Window, Monitors
+from ..gpkgs.guitools import Window
 from ..gpkgs.bwins import Check_box_list
 
 def close(
     default_applications,
     dy_state,
+    active_monitor,
+    obj_monitors,
     actions,
     to_close_group_names=[],
 ):
-    obj_monitor=Monitors().get_active()
     existing_group_names=[group["name"] for group in dy_state["groups"]]
-
     if to_close_group_names:
         if to_close_group_names[0] == "all" and "all" not in existing_group_names:
             for cmd_alias in dy_state["focus"]:
                 if dy_state["focus"][cmd_alias]:
-                    Window(dy_state["focus"][cmd_alias]).close()
+                    Window(dy_state["focus"][cmd_alias], obj_monitors=obj_monitors).close()
 
     if not existing_group_names:
-        message("warning", "There is no group to close", obj_monitor)
+        notify.warning("There is no group to close", active_monitor)
         sys.exit(1)
 
     if to_close_group_names:
@@ -36,11 +36,11 @@ def close(
             to_close_group_names=set(to_close_group_names)
             for to_close_group_name in to_close_group_names:
                 if not to_close_group_name in existing_group_names:
-                    message("warning", "There is no group with name '{}' to close".format(to_close_group_name), obj_monitor)
+                    notify.warning("There is no group with name '{}' to close".format(to_close_group_name), active_monitor)
                     sys.exit(1)
     else:
         options=dict(
-            monitor=obj_monitor,
+            monitor=active_monitor,
             items=existing_group_names,
             values=existing_group_names,
             prompt_text="Select Group(s) to close: ",
@@ -52,11 +52,11 @@ def close(
 
         if not isinstance(to_close_group_names, list):
             if to_close_group_names == "_aborted":
-                message("warning", "Scriptjob close cancelled", obj_monitor)
+                notify.warning("Scriptjob close cancelled", active_monitor)
                 sys.exit(1)
         
         if not to_close_group_names:
-            message("warning", "Scriptjob close cancelled", obj_monitor)
+            notify.warning("Scriptjob close cancelled", active_monitor)
             sys.exit(1)
 
     other_groups_windows=[]
@@ -87,12 +87,10 @@ def close(
         focus_hex_ids=[dy_state["focus"][cmd_alias] for cmd_alias in dy_state["focus"]]
         if focus_hex_ids:
             if hex_id not in focus_hex_ids:
-                Window(hex_id).close()
+                Window(hex_id, obj_monitors=obj_monitors).close()
         else:
-            Window(hex_id).close()
+            Window(hex_id, obj_monitors=obj_monitors).close()
 
     dy_state["groups"]=tmp_groups
-
-    update_groups(default_applications, dy_state, actions)
     
-    message("success", "Scriptjob group(s) ['{}'] closed.".format("', '".join(to_close_group_names)), obj_monitor)
+    notify.success("Scriptjob group(s) ['{}'] closed.".format("', '".join(to_close_group_names)), active_monitor)

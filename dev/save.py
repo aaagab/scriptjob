@@ -6,10 +6,10 @@ import sys
 import configparser
 import contextlib
 
-from .helpers import message
+from . import notify
 from .custom_check_box_list import Custom_check_box_list
 
-from ..gpkgs.guitools import Window, Windows, Regular_windows, Monitors
+from ..gpkgs.guitools import Window, Windows, Regular_windows
 from ..gpkgs.bwins import Prompt_boolean, Path_dialog, Input_box, Path_dialog
 
 from tkinter.filedialog import askopenfilename, askdirectory
@@ -63,17 +63,18 @@ def save(
     filen_scriptjob_json,
     dy_exes,
     dy_state,
+    active_monitor,
+    active_window_hex_id,
+    obj_monitors,
     actions,
     dst_path=None,
     selected_group_names=[],
 ):
     direpa_current=os.getcwd()
-    active_monitor=Monitors().get_active()
         
     filen_scriptjob_json=filen_scriptjob_json
     filer_scriptjob_json, ext=os.path.splitext(filen_scriptjob_json)
     filen_save_json="{}_save{}".format(filer_scriptjob_json, ext)
-    start_hex_id=Windows.get_active_hex_id()
     filenpa_save_json=""
 
     if dst_path:
@@ -85,7 +86,7 @@ def save(
         else:
             direpa_dst=os.path.dirname(dst_path)
             if not os.path.exists(direpa_dst):
-                message("error", "dst_path folder '{}' does not exist".format(direpa_dst), active_monitor)
+                notify.error("dst_path folder '{}' does not exist".format(direpa_dst), active_monitor)
                 sys.exit(1)
             else:
                 filenpa_save_json=dst_path
@@ -97,11 +98,11 @@ def save(
         
         user_path=path_dialog.loop().output
         if not user_path:
-            message("warning", "scriptjob 'save' cancelled", active_monitor)
+            notify.warning("scriptjob 'save' cancelled", active_monitor)
             sys.exit(1)
         else:
             if user_path == "_aborted":
-                message("warning", "scriptjob 'save' cancelled", active_monitor)
+                notify.warning("scriptjob 'save' cancelled", active_monitor)
                 sys.exit(1)
 
             path_user=user_path[0]
@@ -118,13 +119,13 @@ def save(
     filenpa_save_json=get_new_filenpa_save_json_if_symlink(filenpa_save_json)
 
     if os.path.isdir(filenpa_save_json):
-        message("error", "save filename '{}' is a directory".format(filenpa_save_json), active_monitor)
+        notify.error("save filename '{}' is a directory".format(filenpa_save_json), active_monitor)
         sys.exit(1)
     else:
         if os.path.exists(filenpa_save_json):
             user_choice=Prompt_boolean(dict(monitor=active_monitor, title="Scriptjob save", prompt_text="Do you want to overwrite '{}'?".format(filenpa_save_json), YN="n")).loop().output
             if user_choice == "_aborted" or user_choice is False:
-                message("warning", "scriptjob 'save' cancelled", active_monitor)
+                notify.warning("scriptjob 'save' cancelled", active_monitor)
                 sys.exit(1)
 
     with open(filenpa_save_json, "w") as f:
@@ -146,7 +147,7 @@ def save(
     groups_first_window_hex_ids=[group["windows"][0]["hex_id"] for group in dy_state["groups"]]
 
     if not group_names:
-        message("warning", "There is no group to save", active_monitor)
+        notify.warning("There is no group to save", active_monitor)
         sys.exit(1)
 
     if not selected_group_names:
@@ -162,16 +163,16 @@ def save(
 
         if not isinstance(selected_group_names, list):
             if selected_group_names == "_aborted":
-                message("warning", "Scriptjob save cancelled", active_monitor)
+                notify.warning("Scriptjob save cancelled", active_monitor)
                 sys.exit(1)
         
         if not selected_group_names:
-            message("warning", "Scriptjob save cancelled", active_monitor)
+            notify.warning("Scriptjob save cancelled", active_monitor)
             sys.exit(1)
 
     for group_name in selected_group_names:
         if not group_name in group_names:
-            message("warning","There is no group with name '{}' to save".format(group_name), active_monitor)
+            notify.warning("There is no group with name '{}' to save".format(group_name), active_monitor)
             sys.exit(1)
         
         selected_group_index=group_names.index(group_name)
@@ -185,7 +186,7 @@ def save(
 
     obj_windows=[]
     found_hex_ids=[]
-    all_windows=Windows().sorted_by_class().filter_regular_type().windows
+    all_windows=Windows(obj_monitors=obj_monitors).sorted_by_class().filter_regular_type().windows
     all_windows_hex_ids=[window.hex_id for window in all_windows]
 
     for group in dict_groups:
@@ -197,10 +198,10 @@ def save(
             # if window not already found ( create it )
             if not window["hex_id"] in found_hex_ids:
                 found_hex_ids.append(window["hex_id"])
-                win_id=get_win_id(window["hex_id"], len(found_hex_ids)-1)
-                dy_conf["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], dy_exes, active_monitor))
+                win_id=get_win_id(window["hex_id"], len(found_hex_ids)-1, obj_monitors)
+                dy_conf["windows"].append(get_window_obj(window["hex_id"], win_id, group["name"], dy_exes, active_monitor, obj_monitors))
             else: # if window already found ( in actions or other group )
-                win_id=get_win_id(window["hex_id"], found_hex_ids.index(window["hex_id"]))
+                win_id=get_win_id(window["hex_id"], found_hex_ids.index(window["hex_id"]), obj_monitors)
                 # then add new group_name to this window
                 already_found_window=[win for win in dy_conf["windows"]][found_hex_ids.index(window["hex_id"])]
                 if group["name"] not in already_found_window["groups"]:
@@ -220,11 +221,11 @@ def save(
                     if selected_action.parameters[p]["type"] in ["window_hex_id", "active_window"]:
                         if not parameter in found_hex_ids: # if window not already found
                             found_hex_ids.append(parameter)
-                            win_id=get_win_id(parameter, len(found_hex_ids)-1)
-                            dy_conf["windows"].append(get_window_obj(parameter, win_id, group["name"], dy_exes, active_monitor))
+                            win_id=get_win_id(parameter, len(found_hex_ids)-1, obj_monitors)
+                            dy_conf["windows"].append(get_window_obj(parameter, win_id, group["name"], dy_exes, active_monitor, obj_monitors))
                             tmp_parameters.append("win_id:"+str(win_id))
                         else: # if window already found ( in actions or other group )
-                            win_id=get_win_id(parameter, found_hex_ids.index(parameter))
+                            win_id=get_win_id(parameter, found_hex_ids.index(parameter), obj_monitors)
                             tmp_parameters.append("win_id:"+str(win_id))
                             already_found_window=[win for win in dy_conf["windows"]][found_hex_ids.index(parameter)]
                             if group["name"] not in already_found_window["groups"]:
@@ -244,8 +245,8 @@ def save(
     with open(filenpa_save_json, "w") as f:
         f.write(json.dumps(dy_conf, sort_keys=True, indent=4 ))
 
-    Regular_windows.focus(start_hex_id)
-    message("success", "Scriptjob saved '[{}]' to '{}'".format(
+    Regular_windows.focus(active_window_hex_id)
+    notify.success("Scriptjob saved '[{}]' to '{}'".format(
         ", ".join(selected_group_names),
         filenpa_save_json
         ), active_monitor)
@@ -271,9 +272,9 @@ def get_new_filenpa_save_json_if_symlink(filenpa_save_json):
 
     return filenpa_save_json
 
-def get_win_id(hex_id, index):
+def get_win_id(hex_id, index, obj_monitors):
     return "{}_{}".format(
-        Window(hex_id).exe_name[0:2],
+        Window(hex_id=hex_id, obj_monitors=obj_monitors).exe_name[0:2],
         index
     )
 
@@ -289,12 +290,12 @@ def get_paths(dy_exes, window, group_name, active_monitor):
                 paths=Path_dialog(dict(monitor=active_monitor, title=group_name, prompt_text=prompt_text)).loop().output
                 if not isinstance(paths, list):
                     if paths == "_aborted":
-                        message("warning", "Scriptjob save cancelled", active_monitor)
+                        notify.warning("Scriptjob save cancelled", active_monitor)
                         sys.exit(1)
     return paths
 
-def get_window_obj(hex_id, win_id, group_name, dy_exes, active_monitor):
-    window=Window(hex_id)
+def get_window_obj(hex_id, win_id, group_name, dy_exes, active_monitor, obj_monitors):
+    window=Window(hex_id, obj_monitors)
 
     tmp_windows=dict(
         id=win_id,

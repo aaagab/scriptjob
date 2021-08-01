@@ -5,7 +5,7 @@
     },
     "built_in_open": {
         "aliases": "--cli-dev,--web-dev",
-        "nvalues": 1,
+        "nvalues": "?",
         "nested": true,
         "type": "directory",
         "values": "PATH"
@@ -39,7 +39,7 @@
     },
     "open": {
         "aliases": "-o,--open",
-        "args": "path_json",
+        "args": "built_in_open,path_json,search",
         "info": "Recreate windows group(s) from a 'scriptjob_save.json' file. The first argument has to be the json file path, then user can select any group names from this file in order to open them. If user don't choose a path the application searches for a scriptjob_save.json file on the current path. If you want to open one to multiple group names, the scriptjob_save.json file has to be given has first argument. If no group names are given as parameters, all the groups from the file are going to be selected. Settings can added in 'exes' section of config.json to determine how some applications behave during the open step. Settings are 'title' 'new_tab' 'new_window' 'shared'",
         "nvalues": "*",
         "values": "GROUP_NAME"
@@ -83,10 +83,11 @@
         "nvalues": "*",
         "values": "GROUP_NAME"
     },
-    "search_open": {
-        "aliases": "--so,--search-open",
+    "search": {
+        "aliases": "--se,--search",
         "args": "index",
         "info": "Go through apps directory find folder name and open its scriptjob_save.json if any.",
+        "nested": true,
         "nvalues": 1,
         "values": "FOLDER_NAME"
     },

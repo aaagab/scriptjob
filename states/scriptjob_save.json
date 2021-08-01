@@ -1,0 +1,68 @@
+{
+    "diren": "src",
+    "groups": [
+        {
+            "name": "scriptjob",
+            "windows": [
+                {
+                    "actions": [
+                        {
+                            "name": "execute_terminal",
+                            "parameters": [
+                                "win_id:co_0",
+                                "win_id:ko_1"
+                            ]
+                        }
+                    ],
+                    "id": "co_0"
+                },
+                {
+                    "actions": [
+                        {
+                            "name": "active_group_previous_window",
+                            "parameters": [
+                                "previous_window_hex_id"
+                            ]
+                        }
+                    ],
+                    "id": "ko_1"
+                }
+            ]
+        }
+    ],
+    "windows": [
+        {
+            "_class": "vscodium",
+            "cmd_parameters": "--new-window /home/gabaaa/fty/wrk/s/scriptjob/1",
+            "exe": "codium",
+            "filenpa_exe": "/usr/bin/codium",
+            "groups": [
+                "scriptjob"
+            ],
+            "id": "co_0",
+            "monitor": 1,
+            "name": "scriptjob",
+            "paths": [
+                "/home/gabaaa/fty/wrk/s/scriptjob/1"
+            ],
+            "tile": "maximize"
+        },
+        {
+            "_class": "konsole",
+            "cmd_parameters": "-p tabtitle=scriptjob",
+            "exe": "konsole",
+            "filenpa_exe": "/usr/bin/konsole",
+            "groups": [
+                "scriptjob"
+            ],
+            "id": "ko_1",
+            "monitor": 0,
+            "name": "scriptjob \u2014 Konsole",
+            "paths": [],
+            "rcfile_cmds": [
+                "cd /home/gabaaa/fty/wrk/s/scriptjob/1/src"
+            ],
+            "tile": "right"
+        }
+    ]
+}
