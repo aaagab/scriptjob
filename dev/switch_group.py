@@ -1,11 +1,10 @@
 #!/usr/bin/env python3
+from pprint import pprint
 import os
 import sys
 
-from .windows_list import Windows_list
-from .set_previous import set_previous
+from .custom_windows import Windows_list
 from . import notify
-from .helpers import generate_group_name
 
 from ..gpkgs.guitools import Regular_windows
 
@@ -13,70 +12,86 @@ def switch_group(
     dy_state,
     active_monitor,
     active_window_hex_id,
-    action,
+    direction,
     group_name=None,
 ):
-    group_names=[group["name"] for group in dy_state["groups"]]
-    group_index=""
-    if not group_names:
-        notify.warning("There is no group to select", active_monitor)
-        sys.exit(1)
-    
-    active_group_index=group_names.index(dy_state["active_group"])
+    dy_timestamps=dict()
+    for name in dy_state["groups"]:
+        dy_group=dy_state["groups"][name]
+        dy_timestamps[dy_group["timestamp"]]=name
 
-    process_switch_group=False
-    
-    if action == "next":
-        if active_group_index == len(group_names) -1:
-            group_index=0
-        else:
-            group_index=active_group_index+1
-    elif action == "previous":
-        if active_group_index == 0:
-            group_index=len(group_names) - 1
-        else:
-            group_index=active_group_index-1
-    elif action == "group":
-        if group_name is None:
-            groups_previous_window_hex_ids=[group["previous_window"] for group in dy_state["groups"]]
+    group_names=[]
+    for timestamp in sorted(dy_timestamps):
+        group_names.append(dy_timestamps[timestamp])
+
+    if len(group_names) == 0:
+        notify.warning("There is no group to select.", obj_monitor=active_monitor)
+        sys.exit(1)
+
+    selected_name=None
+    if group_name is None:
+        if direction is None:
+            groups_last_win_hex_ids=[]
+            for name in group_names:
+                win_ref=dy_state["groups"][name]["last_window_ref"]
+                groups_last_win_hex_ids.append(dy_state["groups"][name]["windows"][win_ref]["hex_id"])
+
             window_list=Windows_list(dict(
                 monitor=active_monitor,
                 items=group_names, 
                 prompt_text="Select a Group:", 
-                checked=active_group_index,
-                title="ScriptJob"), groups_previous_window_hex_ids)
+                checked=group_names.index(dy_state["active_group"]),
+                title="ScriptJob"), groups_last_win_hex_ids)
                 
             window_list.btn_done.pack_forget()
             window_list.focus_buttons.remove(window_list.btn_done)
             group_index=window_list.loop().output
 
             if group_index == "_aborted":
-                notify.warning("Scriptjob switch_group cancelled.", active_monitor)
+                notify.warning("switch_group canceled.", obj_monitor=active_monitor)
                 sys.exit(1)
+            else:
+                selected_name=group_names[group_index]
         else:
-            group_index=group_names.index(group_name)
-
-    if dy_state["active_group"] != group_names[group_index]:
-        set_previous(dy_state, "active_group", active_window_hex_id)
-        # dy_state["groups"]
-
-        dy_state["active_group"]=group_names[group_index]
-
-        set_previous(dy_state, "global", active_window_hex_id)
-        active_group_hex_ids=[win["hex_id"] for win in dy_state["groups"][group_index]["windows"]]
-        focus_all_group_windows(active_group_hex_ids)
-        Regular_windows.focus(dy_state["groups"][group_index]["previous_window"])
+            if len(group_names) == 1:
+                selected_name=group_name
+            else:
+                group_name=dy_state["active_group"]
+                group_index=group_names.index(group_name)
+                if direction == "next":
+                    is_last=(group_index == len(group_names) -1)
+                    if is_last is True:
+                        selected_name=group_names[0]
+                    else:
+                        selected_name=group_names[group_index+1]
+                elif direction == "previous":
+                    is_first=(group_index == group_names[0])
+                    if is_first is True:
+                        selected_name=group_names[-1]
+                    else:
+                        selected_name=group_names[group_index-1]
     else:
-        active_group_hex_ids=[win["hex_id"] for win in dy_state["groups"][active_group_index]["windows"]]
-        focus_all_group_windows(active_group_hex_ids)
-        if active_window_hex_id in active_group_hex_ids:
-            Regular_windows.focus(active_window_hex_id)
+        if group_name in group_names:
+            selected_name=group_name
         else:
-            Regular_windows.focus(dy_state["groups"][active_group_index]["previous_window"])
-            set_previous(dy_state, "global", active_window_hex_id)
+            notify.error("Group '{}' does not exist in {}.".format(group_name, sorted(group_names)), obj_monitor=active_monitor)
+            sys.exit(1)
 
-    notify.success("Active_Group: {}".format(dy_state["active_group"]), active_monitor)
+    dy_group=dy_state["groups"][selected_name]
+    dy_timestamp=dict()
+    last_win_ref=dy_group["last_window_ref"]
+    last_hex_id=None
+    for win_ref in dy_group["windows"]:
+        dy_win=dy_group["windows"][win_ref]
+        if win_ref == last_win_ref:
+            last_hex_id=dy_win["hex_id"]
+        else:
+            dy_timestamp[dy_win["timestamp"]]=dy_win["hex_id"]
 
-def focus_all_group_windows(windows_hex_ids):
-    for window_hex_id in windows_hex_ids:
-        Regular_windows.focus(window_hex_id)
+    for timestamp in sorted(dy_timestamp):
+        Regular_windows.focus(dy_timestamp[timestamp])
+
+    Regular_windows.focus(last_hex_id)
+
+    dy_state["active_group"]=selected_name
+    dy_state["last_window_id"]=active_window_hex_id

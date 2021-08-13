@@ -4,93 +4,91 @@ import os
 import sys
 
 from . import notify
-from .custom_check_box_list import Custom_check_box_list
-from .update_groups import update_groups
+from .custom_windows import Custom_check_box_list
 
-from ..gpkgs.guitools import Window
-from ..gpkgs.bwins import Check_box_list
+from ..gpkgs.guitools import Regular_windows
 
 def close(
-    default_applications,
     dy_state,
     active_monitor,
     obj_monitors,
-    actions,
     to_close_group_names=[],
+    close_all=False,
 ):
-    existing_group_names=[group["name"] for group in dy_state["groups"]]
-    if to_close_group_names:
-        if to_close_group_names[0] == "all" and "all" not in existing_group_names:
-            for cmd_alias in dy_state["focus"]:
-                if dy_state["focus"][cmd_alias]:
-                    Window(dy_state["focus"][cmd_alias], obj_monitors=obj_monitors).close()
+    dy_timestamps=dict()
+    for name in dy_state["groups"]:
+        dy_group=dy_state["groups"][name]
+        dy_timestamps[dy_group["timestamp"]]=name
 
-    if not existing_group_names:
-        notify.warning("There is no group to close", active_monitor)
+    existing_group_names=[]
+    prompt_group_names=[]
+    for timestamp in sorted(dy_timestamps):
+        existing_group_names.append(dy_timestamps[timestamp])
+        prompt_group_names.append(dy_timestamps[timestamp])
+
+    if len(existing_group_names) == 0:
+        notify.warning("There is no group to select.", obj_monitor=active_monitor)
         sys.exit(1)
 
-    if to_close_group_names:
-        if to_close_group_names[0] == "all" and "all" not in existing_group_names:
+    if len(to_close_group_names) == 0:
+        if close_all is True:
             to_close_group_names=existing_group_names
         else:
-            to_close_group_names=set(to_close_group_names)
-            for to_close_group_name in to_close_group_names:
-                if not to_close_group_name in existing_group_names:
-                    notify.warning("There is no group with name '{}' to close".format(to_close_group_name), active_monitor)
-                    sys.exit(1)
-    else:
-        options=dict(
-            monitor=active_monitor,
-            items=existing_group_names,
-            values=existing_group_names,
-            prompt_text="Select Group(s) to close: ",
-            title="Scriptjob Group Close",
-            checked=[False] * len(existing_group_names)
-        )
-        groups_first_window_hex_ids=[group["windows"][0]["hex_id"] for group in dy_state["groups"]]
-        to_close_group_names=Custom_check_box_list(options, groups_first_window_hex_ids).loop().output
+            options=dict(
+                monitor=active_monitor,
+                items=existing_group_names,
+                values=existing_group_names,
+                prompt_text="Select Group(s) to close: ",
+                title="Scriptjob Group Close",
+                checked=[False] * len(existing_group_names)
+            )
 
-        if not isinstance(to_close_group_names, list):
+            groups_last_win_hex_ids=[]
+            for name in existing_group_names:
+                win_ref=dy_state["groups"][name]["last_window_ref"]
+                groups_last_win_hex_ids.append(dy_state["groups"][name]["windows"][win_ref]["hex_id"])
+
+
+            to_close_group_names=Custom_check_box_list(options, groups_last_win_hex_ids).loop().output
+
             if to_close_group_names == "_aborted":
-                notify.warning("Scriptjob close cancelled", active_monitor)
+                notify.warning("Scriptjob close canceled.", obj_monitor=active_monitor)
                 sys.exit(1)
-        
-        if not to_close_group_names:
-            notify.warning("Scriptjob close cancelled", active_monitor)
-            sys.exit(1)
+            
+            if len(to_close_group_names) == 0:
+                notify.warning("Scriptjob close canceled.", obj_monitor=active_monitor)
+                sys.exit(1)
+    else:
+        to_close_group_names=set(to_close_group_names)
+        for to_close_group_name in to_close_group_names:
+            if not to_close_group_name in existing_group_names:
+                notify.warning("There is no group to close with name '{}'.".format(to_close_group_name), obj_monitor=active_monitor)
+                sys.exit(1)
 
-    other_groups_windows=[]
-    selected_group_windows=[]
+    non_selected_group_names=set(existing_group_names) - set(to_close_group_names)
 
-    tmp_groups=[]
-    for group in dy_state["groups"]:
-        if group["name"] not in to_close_group_names :
-            tmp_groups.append(group)
-        for window in group["windows"]:
-            if group["name"] in to_close_group_names :
-                selected_group_windows.append(window["hex_id"])
-            else:
-                other_groups_windows.append(window["hex_id"])
-            for a, action in enumerate(window["actions"]):
-                index_action=[act.name for act in actions.obj_actions].index(action["name"])
-                current_action=actions.obj_actions[index_action]
-                for p, parameter in enumerate(action["parameters"]):
-                    if current_action.parameters[p]["type"] == "window_hex_id":
-                        if group["name"] in to_close_group_names :
-                            selected_group_windows.append(parameter)
-                        else:
-                            other_groups_windows.append(parameter)
+    to_keep_win_hex_ids=set()
+    for name in non_selected_group_names:
+        dy_group=dy_state["groups"][name]
+        for ref_num in dy_group["windows"]:
+            to_keep_win_hex_ids.add(dy_group["windows"][ref_num]["hex_id"])
 
-    windows_hex_id_to_close=set(selected_group_windows) - set(other_groups_windows)
+    for win_hex_id in dy_state["focus"]["windows"]:
+        to_keep_win_hex_ids.add(win_hex_id)
 
-    for hex_id in windows_hex_id_to_close:
-        focus_hex_ids=[dy_state["focus"][cmd_alias] for cmd_alias in dy_state["focus"]]
-        if focus_hex_ids:
-            if hex_id not in focus_hex_ids:
-                Window(hex_id, obj_monitors=obj_monitors).close()
-        else:
-            Window(hex_id, obj_monitors=obj_monitors).close()
+    for name in sorted(dy_state["groups"]):
+        if name in to_close_group_names:
+            dy_group=dy_state["groups"][name]
+            for ref_num in dy_group["windows"]:
+                win_hex_id=dy_group["windows"][ref_num]["hex_id"]
+                if win_hex_id not in to_keep_win_hex_ids:
+                    Regular_windows.close(win_hex_id)
+            del dy_state["groups"][name]
+            existing_group_names.remove(name)
 
-    dy_state["groups"]=tmp_groups
+    if len(existing_group_names) > 0:
+        dy_state["active_group"]=existing_group_names[-1]
+    else:
+        dy_state["active_group"]=None
     
-    notify.success("Scriptjob group(s) ['{}'] closed.".format("', '".join(to_close_group_names)), active_monitor)
+    notify.success("Scriptjob group(s) {} closed.".format(prompt_group_names), obj_monitor=active_monitor)
