@@ -24,7 +24,7 @@ def focus_window(
         group_win_hex_ids=get_group_win_hex_ids(dy_group)
         if active_window_hex_id not in group_win_hex_ids:
             window_type="last"
-        win_hex_id=get_window_hex_id(dy_group, active_monitor, window_type, group_win_hex_ids)
+        win_hex_id=get_window_hex_id(dy_group, active_window_hex_id, window_type, group_win_hex_ids)
         for win_ref in dy_group["windows"]:
             dy_win=dy_group["windows"][win_ref]
             if dy_win["hex_id"] == active_window_hex_id:
