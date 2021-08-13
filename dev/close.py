@@ -24,7 +24,6 @@ def close(
     prompt_group_names=[]
     for timestamp in sorted(dy_timestamps):
         existing_group_names.append(dy_timestamps[timestamp])
-        prompt_group_names.append(dy_timestamps[timestamp])
 
     if len(existing_group_names) == 0:
         notify.warning("There is no group to select.", obj_monitor=active_monitor)
@@ -85,6 +84,8 @@ def close(
                     Regular_windows.close(win_hex_id)
             del dy_state["groups"][name]
             existing_group_names.remove(name)
+            prompt_group_names.append(name)
+
 
     if len(existing_group_names) > 0:
         dy_state["active_group"]=existing_group_names[-1]
