@@ -81,6 +81,7 @@ def focus_group(
             values=wins,
             prompt_text="Select window(s) to close: ",
             title="Scriptjob Focus group delete",
+            checked=[False] * len(wins),
         )
 
         output=Custom_check_box_list(options, wins).loop().output

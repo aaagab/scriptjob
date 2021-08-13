@@ -2,7 +2,7 @@
 # authors: Gabriel Auger
 # name: scriptjob
 # licenses: MIT
-__version__= "10.2.3"
+__version__= "10.2.4"
 
 from .gpkgs.options import Options
 from .gpkgs.etconf import Etconf
