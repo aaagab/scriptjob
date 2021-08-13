@@ -66,7 +66,10 @@ def focus_group(
 
         wins.append(window.hex_id)
         dy_state["focus"]["last_window_id"]=window.hex_id
+        notify.success("window '{}' added.".format(window.name), obj_monitor=active_monitor)
+        
         window.focus()
+
     elif command == "delete":
         win_names=[]
         for hex_id in wins:
