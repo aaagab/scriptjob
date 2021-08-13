@@ -143,7 +143,6 @@ class Session():
 
             if len(dy_group["windows"]) > 0:
                 if dy_group["last_window_ref"] not in dy_group["windows"]:
-                    print("sfsdf???", dy_group["last_window_ref"], dy_group["windows"])
                     for timestamp in sorted(dy_window_timestamps, reverse=True):
                         dy_group["last_window_ref"]=dy_window_timestamps[timestamp]
                         break
