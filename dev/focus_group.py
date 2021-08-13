@@ -20,7 +20,7 @@ def focus_group(
     wins=dy_state["focus"]["windows"]
     if command != "add":
         if len(wins) == 0:
-            notify.warning("Focus group has no windows. Add a window first with --focus-group --add.", exit=1)
+            notify.warning("Focus group has no windows. Add a window first with --focus-group --add.", obj_monitor=active_monitor, exit=1)
 
     if command in ["last", "next", "previous"]:
         last_window_id=dy_state["focus"]["last_window_id"]
