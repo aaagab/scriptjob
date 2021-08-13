@@ -28,8 +28,7 @@ def get_gpkg_path(
 
     direpa_app_name=os.path.join(direpa_search, app_name[0], app_name)
     if not os.path.exists(direpa_app_name):
-        notify.warning("not found '{}'".format(direpa_app_name), obj_monitor=active_monitor, active_monitor)
-        sys.exit(1)
+        notify.warning("not found '{}'".format(direpa_app_name), obj_monitor=active_monitor, exit=1)
 
     diren=None
     direns=sorted(os.listdir(direpa_app_name))
