@@ -69,6 +69,8 @@ def launch(
 
             if window is "_aborted":
                 notify.warning("open command canceled.", obj_monitor=active_monitor, exit=1)
+
+            notify.success("window '{}' selected.".format(window.name), obj_monitor=active_monitor)
         else:
             if "rcfile" in dy_win:
                 filenpa_rc=dy_win["rcfile"]["path"].format(**dy_group_vars)
