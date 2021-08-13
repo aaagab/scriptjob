@@ -39,7 +39,7 @@ def close(
                 values=existing_group_names,
                 prompt_text="Select Group(s) to close: ",
                 title="Scriptjob Group Close",
-                checked=[False] * len(existing_group_names)
+                checked=[False] * len(existing_group_names),
             )
 
             groups_last_win_hex_ids=[]
