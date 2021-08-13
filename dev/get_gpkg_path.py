@@ -39,6 +39,7 @@ def get_gpkg_path(
             diren=direns[0]
         else:
             options=dict(
+                monitor=active_monitor, 
                 items=direns,
                 values=direns,
                 title="scriptjob",
