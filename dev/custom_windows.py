@@ -16,13 +16,13 @@ def get_window_hex_id(obj_monitors, dy_event):
             try:
                 selected_window=Window(obj_monitors=obj_monitors).select()
                 if selected_window.hex_id == dy_event["avoid_hex_id"]:
-                    notify.warning("This window can't be selected")
+                    notify.warning("This window can't be selected", obj_monitor=dy_event["monitor"])
                 elif selected_window.hex_id in dy_event["desktop_win_hex_ids"]:
                     Mouse().left_click()
                 else:
                     dy_event["window"]=selected_window
             except BaseException as e:
-                notify.error("Please try again. Unmanaged Error when selecting a window")
+                notify.error("Please try again. Unmanaged Error when selecting a window", obj_monitor=dy_event["monitor"])
         else:
             time.sleep(.01)
 
@@ -47,7 +47,7 @@ class Window_Prompt(Generic_window):
         self.root.wm_attributes('-type', 'splash')
 
         self.output=None
-        self.dy_event=dict(avoid_hex_id=None, desktop_win_hex_ids=options["desktop_win_hex_ids"], is_aborted=False, window=None)
+        self.dy_event=dict(avoid_hex_id=None, desktop_win_hex_ids=options["desktop_win_hex_ids"], is_aborted=False, window=None, monitor=options["monitor"])
         thread_get_window=threading.Thread(target=get_window_hex_id, args=(options["obj_monitors"],self.dy_event,))  # <- note extra ','
         thread_get_window.start()
         self.monitor_event()
