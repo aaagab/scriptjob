@@ -4,8 +4,8 @@
 ```bash
 # Recommended Hotkeys:
 	F3:           | scriptjob --execute
-	Shift F3:     | scriptjob --focus-window next
-	Alt e:        | scriptjob --focus-group --next
+	Shift F3:     | scriptjob --focus-window --active-group --next
+    Alt a:        | scriptjob --focus-group --add
 	Alt f:        | scriptjob --focus-group toggle
 	Alt Shift f:  | scriptjob --focus-group --next
     Alt t:        | scriptjob --launch --prompt-group --prompt-windows
