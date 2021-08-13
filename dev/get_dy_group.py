@@ -35,6 +35,7 @@ def get_dy_group_info(group_name, direpa_groups, dy_settings, prompt_group, acti
     if group_name is None:
         if prompt_group is True:
             options=dict(
+                monitor=active_monitor, 
                 prompt_text="Select a group name:", 
                 title="ScriptJob",
                 items=sorted(dy_groups),
