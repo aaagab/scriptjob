@@ -113,9 +113,52 @@ def focus_group(
     elif command == "toggle":
         focus_last_window_id=dy_state["focus"]["last_window_id"]
         groups_last_window_id=dy_state["last_window_id"]
+
+        # if active window is last focus window id then
+        #     I go to last window Id from dy_state.
+        # else:
+        #     I go to last focus window id
+        #     if active window hex_id is not part of focus windows, then 
+        #         it is set in dy_state.
+        #         what about active group then when going to focus_window
+        #         if active_window hex_id is part of active group:
+        #             then active group last window_Ref is set with active_window ref
+
         if active_window_hex_id == focus_last_window_id:
             Regular_windows().focus(groups_last_window_id)
-        elif active_window_hex_id == groups_last_window_id:
+        else:
             Regular_windows().focus(focus_last_window_id)
-        else:        
-            Regular_windows().focus(focus_last_window_id)
+            if active_window_hex_id not in dy_state["focus"]["windows"]:
+                dy_state["last_window_id"]=active_window_hex_id
+                dy_group=dy_state["groups"][dy_state["active_group"]]
+                dy_group_ids={ dy_group["windows"][ref]["hex_id"]: ref  for ref in dy_group["windows"] }
+                if active_window_hex_id in dy_group_ids:
+                    dy_group["last_window_ref"]=dy_group_ids[active_window_hex_id]
+
+        #     # go back to last active_window            
+
+
+        # focus_last_window_id=None
+        # if dy_state["active_group"] is not None:
+        #     # {key: value for (key, value) in iterable}
+        #     dy_group=dy_state["groups"][dy_state["active_group"]]
+
+        #     pprint(dy_group_ids)
+
+        #     sys.exit()
+        #     if active_window_hex_id in dy_group_ids:
+        #         dy_group["last_window_ref"]=dy_group_ids[active_window_hex_id]
+        #     else:
+        #         pass
+        # # else:
+        #     # focus_last_window_id=dy_state["focus"]["last_window_id"]
+        # # pprint(dy_state)
+        # # sys.exit()
+        # # if active_window_hex_id
+        # groups_last_window_id=dy_state["last_window_id"]
+        # if active_window_hex_id == focus_last_window_id:
+        #     Regular_windows().focus(groups_last_window_id)
+        # elif active_window_hex_id == groups_last_window_id:
+        #     Regular_windows().focus(focus_last_window_id)
+        # else:        
+        #     Regular_windows().focus(focus_last_window_id)
