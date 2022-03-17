@@ -2,9 +2,10 @@
 # authors: Gabriel Auger
 # name: scriptjob
 # licenses: MIT
-__version__= "10.4.0"
+__version__= "11.0.0"
 
-from .gpkgs.options import Options
+# from .gpkgs.options import Options
+from .gpkgs.nargs import Nargs, EndUserError
 from .gpkgs.etconf import Etconf
 
 from .dev import notify
