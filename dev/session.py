@@ -80,6 +80,7 @@ class Session():
 
     def set_monitors(self):
         dy_existing_monitors={monitor.name:monitor.index for monitor in self.obj_monitors.monitors}
+
         if not "monitors" in self.dy_settings:
             self.dy_settings["monitors"]=dict()
             with open(self.filenpa_settings, "w") as f:

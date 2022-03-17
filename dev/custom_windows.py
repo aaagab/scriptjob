@@ -35,7 +35,7 @@ class Window_Prompt(Generic_window):
         if not "prompt_text" in options or options["prompt_text"] =="":
             self.options["prompt_text"]="Select a window."
 
-        self.options["prompt_text"]+="\nPress cancel to exit."
+        self.options["prompt_text"]+="\nPress escape to exit."
 
         Generic_window.__init__(self, self.options)      
         

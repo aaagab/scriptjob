@@ -84,6 +84,7 @@ def is_parse_syntax(
 
 def execute_regexes():
     return [
+        r"^\s*(?P<cmd>click)\s+(?P<value>[1-9][0-9]*|last|next|previous)\s(?P<keys>[1-9])\s*$",
         r"^\s*(?P<cmd>send-keys)\s+(?P<value>[1-9][0-9]*|last|next|previous)\s(?P<keys>.+?)\s*$",
         r"^\s*(?P<cmd>sleep)\s+(?P<value>[1-9][0-9]*|\.[0-9]*|[1-9][0-9]*\.[0-9]*)\s*$",
         r"^\s*(?P<cmd>focus)\s+(?P<value>[1-9][0-9]*|last|next|previous)\s*$",
@@ -119,17 +120,18 @@ def get_dy_group(
                     notify.error("key 'name' not found at window '{}' in group '{}' at '{}'.".format(win_num, group_name, filenpa_group), obj_monitor=active_monitor, exit=1)
 
                 if "execute" in dy_win:
-                    for line in dy_win["execute"].splitlines():
-                        line=line.strip()
-                        if line != "" and line[0] != "#":
-                            reg_found=False
-                            for reg_txt in execute_regexes():
-                                reg=re.match(reg_txt, line)
-                                if reg:
-                                    reg_found=True
-                                    break
-                            if reg_found is False:
-                                notify.error("At execute for window '{}' line '{}' does not match any regexes from '{}' in group '{}' at '{}'.".format(win_num, line, execute_regexes(), group_name, filenpa_group), obj_monitor=active_monitor, exit=1)
+                    for cmd_name in dy_win["execute"]:
+                        for line in dy_win["execute"][cmd_name].splitlines():
+                            line=line.strip()
+                            if line != "" and line[0] != "#":
+                                reg_found=False
+                                for reg_txt in execute_regexes():
+                                    reg=re.match(reg_txt, line)
+                                    if reg:
+                                        reg_found=True
+                                        break
+                                if reg_found is False:
+                                    notify.error("At execute for window '{}' line '{}' does not match any regexes from '{}' in group '{}' at '{}'.".format(win_num, line, execute_regexes(), group_name, filenpa_group), obj_monitor=active_monitor, exit=1)
                 else:
                     notify.error("key 'execute' not found at window '{}' in group '{}' at '{}'.".format(win_name, group_name, filenpa_group), obj_monitor=active_monitor, exit=1)
 

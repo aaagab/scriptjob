@@ -34,24 +34,29 @@ def launch(
     win_num=0
     for dy_win in dy_group["windows"]:
         win_num+=1
-        tmp_execute=[]
         refs=set()
-        for line in dy_win["execute"].splitlines():
-            for reg_txt in execute_regexes():
-                reg=re.match(reg_txt, line)
-                if reg:
-                    if reg.groupdict()["cmd"] in ["send-keys", "focus"]:
-                        try:
-                            win_ref=int(reg.groupdict()["value"])
-                            if win_ref != win_num:
-                                refs.add(str(win_ref))
-                        except:
-                            pass
 
-                    tmp_execute.append(line)
-                    break
+        tmp_executes=dict()
+        for cmd_name in dy_win["execute"]:
+            tmp_execute=[]
+            for line in dy_win["execute"][cmd_name].splitlines():
+                for reg_txt in execute_regexes():
+                    reg=re.match(reg_txt, line)
+                    if reg:
+                        if reg.groupdict()["cmd"] in ["send-keys", "focus"]:
+                            try:
+                                win_ref=int(reg.groupdict()["value"])
+                                if win_ref != win_num:
+                                    refs.add(str(win_ref))
+                            except:
+                                pass
+
+                        tmp_execute.append(line)
+                        break
+            tmp_executes[cmd_name]=tmp_execute
+
         dy_tmp_group["windows"][str(win_num)]=dict(
-            execute=tmp_execute,
+            execute=tmp_executes,
             hex_id=None,
             refs=list(refs),
             timestamp=None,
@@ -93,8 +98,9 @@ def launch(
         dy_group_monitors=dict()
         if "monitors" in dy_group:
             dy_group_monitors=dy_group["monitors"]
+
         position_window(dy_win["name"], obj_monitors, dy_group_monitors, window)
-        
+
     dy_state["last_window_id"]=active_window_hex_id
     dy_state["active_group"]=new_group_name
     dy_state["groups"][new_group_name]=dy_tmp_group
@@ -117,6 +123,7 @@ def position_window(win_name, obj_monitors, dy_group_monitors, window):
     tile=None
     monitor=0
     num_monitors=len(obj_monitors.monitors)
+
     if num_monitors in dy_group_monitors:
         if win_name in dy_group_monitors[num_monitors]:
             if "monitor" in dy_group_monitors[num_monitors][win_name]:
@@ -124,6 +131,7 @@ def position_window(win_name, obj_monitors, dy_group_monitors, window):
                 monitor=obj_monitors.get_real_index(user_monitor)
             if "tile" in dy_group_monitors[num_monitors][win_name]:
                 tile=dy_group_monitors[num_monitors][win_name]["tile"]
+
     window.tile(tile, monitor)
 
 def set_rc_path(filenpa_rc, cmds):
