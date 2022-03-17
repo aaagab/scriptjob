@@ -3,23 +3,23 @@
 
 ```bash
 # Recommended Hotkeys:
-	F3:           | scriptjob --execute
-	Shift F3:     | scriptjob --focus-window --active-group --next
-    Alt a:        | scriptjob --focus-group --add
-	Alt f:        | scriptjob --focus-group --toggle
-	Alt Shift f:  | scriptjob --focus-group --next
+	shiftF1:           | scriptjob --execute shiftF1
+	F3:           | scriptjob --execute F3
+	Shift F3:     | scriptjob --focus --window --active-group --next
+    Alt a:        | scriptjob --focus --group --add
+	Alt f:        | scriptjob --focus --group --toggle
+	Alt Shift f:  | scriptjob --focus --group --next
     Alt t:        | scriptjob --launch --prompt-group --prompt-windows
 
 # Command typed often:
 scriptjob --close
 scriptjob --launch --search message
 # line above is equivalent to line below
-scriptjob -l -s message
+scriptjob -l@s=message
 # it works with default variables set in settings: root_dir, default_group, vars_default_sets
-scriptjob --focus-group --add
+scriptjob --focus --group --add
 scriptjob --fg --add
-scriptjob --focus-group --delete
-scriptjob --fg --delete
+scriptjob --focus --group --delete
 ```
 
 ```bash
@@ -68,8 +68,11 @@ windows:
       bash
       --rcfile
       {RCFILE_PATH}
-    execute: |
-      focus last
+    execute: 
+      f3: |
+        focus last
+      shiftF1: |
+        focus last
     name: terminal
     rcfile:
       path: "{RCFILE_PATH}"
@@ -80,13 +83,20 @@ windows:
       codium
       --new-window
       {PATH_EDITOR}
-    execute: |
-      send-keys 2 Ctrl+s
-      sleep .05
-      focus 1
-      send-keys 1 Up
-      sleep .05
-      send-keys 1 Return
+    execute: 
+      f3: |
+        send-keys 2 Ctrl+s
+        sleep .05
+        focus 1
+        send-keys 1 Up
+        sleep .05
+        send-keys 1 Return
+      shiftF1: |
+        sleep .05
+        send-keys 2 Ctrl+c
+        sleep .3
+        focus 1
+        send-keys 1 Ctrl+Shift+v
     name: editor
 
 variables:
@@ -120,7 +130,7 @@ monitors:
 // tmp/s/scriptjob/scriptjob-state-{major_version}-dev.json
 // this file is generated automatically ()
 {
-    "active_group": "message_2",
+    "active_group": "message",
     "focus": {
         "last_window_id": null,
         "windows": []
@@ -128,63 +138,91 @@ monitors:
     "groups": {
         "message": {
             "last_window_ref": "2",
-            "timestamp": 1628864581.397561,
+            "timestamp": 1647525455.9285493,
             "windows": {
                 "1": {
-                    "execute": [
-                        "focus last"
-                    ],
-                    "hex_id": "0x7200007",
+                    "execute": {
+                        "f3": [
+                            "focus last"
+                        ],
+                        "shiftF1": [
+                            "focus last"
+                        ]
+                    },
+                    "hex_id": "0x7c00007",
                     "refs": [],
-                    "timestamp": 1628864582.1277504
+                    "timestamp": 1647525456.5545356
                 },
                 "2": {
-                    "execute": [
-                        "send-keys 2 Ctrl+s",
-                        "sleep .05",
-                        "focus 1",
-                        "send-keys 1 Up",
-                        "sleep .05",
-                        "send-keys 1 Return"
-                    ],
-                    "hex_id": "0x600008a",
+                    "execute": {
+                        "f3": [
+                            "send-keys 2 Ctrl+s",
+                            "sleep .05",
+                            "focus 1",
+                            "send-keys 1 Up",
+                            "sleep .05",
+                            "send-keys 1 Return"
+                        ],
+                        "shiftF1": [
+                            "sleep .05",
+                            "send-keys 2 Ctrl+c",
+                            "sleep .3",
+                            "focus 1",
+                            "send-keys 1 Ctrl+Shift+v"
+                        ]
+                    },
+                    "hex_id": "0x620007a",
                     "refs": [
                         "1"
                     ],
-                    "timestamp": 1628864583.1044211
+                    "timestamp": 1647525457.5716422
                 }
             }
         },
-        "message_2": {
+        "options": {
             "last_window_ref": "2",
-            "timestamp": 1628864744.1166492,
+            "timestamp": 1647525446.5373795,
             "windows": {
                 "1": {
-                    "execute": [
-                        "focus last"
-                    ],
-                    "hex_id": "0x7800007",
+                    "execute": {
+                        "f3": [
+                            "focus last"
+                        ],
+                        "shiftF1": [
+                            "focus last"
+                        ]
+                    },
+                    "hex_id": "0x7e00007",
                     "refs": [],
-                    "timestamp": 1628864744.8942006
+                    "timestamp": 1647525447.0468535
                 },
                 "2": {
-                    "execute": [
-                        "send-keys 2 Ctrl+s",
-                        "sleep .05",
-                        "focus 1",
-                        "send-keys 1 Up",
-                        "sleep .05",
-                        "send-keys 1 Return"
-                    ],
-                    "hex_id": "0x600008a",
+                    "execute": {
+                        "f3": [
+                            "send-keys 2 Ctrl+s",
+                            "sleep .05",
+                            "focus 1",
+                            "send-keys 1 Up",
+                            "sleep .05",
+                            "send-keys 1 Return"
+                        ],
+                        "shiftF1": [
+                            "sleep .05",
+                            "send-keys 2 Ctrl+c",
+                            "sleep .3",
+                            "focus 1",
+                            "send-keys 1 Ctrl+Shift+v"
+                        ]
+                    },
+                    "hex_id": "0x6200079",
                     "refs": [
                         "1"
                     ],
-                    "timestamp": 1628864745.9618664
+                    "timestamp": 1647525447.8824177
                 }
             }
         }
     },
-    "last_window_id": "0x7000007"
+    "last_window_id": "0x200007"
 }
 ```

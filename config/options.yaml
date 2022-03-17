@@ -1,0 +1,89 @@
+args:
+  close:
+    _values: '*'
+    _label: GROUP_NAME
+    all:
+
+  execute:
+    _values: 1-*
+    group:
+      _values: "?"
+    window:
+      _values: "?"
+      _type: int
+
+  focus:
+    _need_child: true
+    group:
+      _allow_siblings: false
+      _need_child: true
+      add:
+        _allow_siblings: false
+      delete:
+        _allow_siblings: false
+      last:
+        _allow_siblings: false
+      next:
+        _allow_siblings: false
+      previous:
+        _allow_siblings: false
+      toggle:
+        _allow_siblings: false
+    window:
+      _allow_siblings: false
+      _need_child: true
+      active_group:
+        _allow_siblings: false
+        _need_child: true
+        last:
+          _allow_siblings: false
+        next:
+          _allow_siblings: false
+        previous:
+          _allow_siblings: false
+      last_global:
+        _allow_siblings: false
+
+  launch:
+    _aliases: -l,--launch
+    _values: '?'
+    _label: LAUNCHER_NAME
+    _need_child: true
+    _xor: from_,prompt_windows,search
+    from_:
+      _aliases: --from,-f
+      _values: '?'
+      _type: file
+      _label: APP_PATH
+      group:
+        _values: 1
+        _label: GROUP_NAME
+      vars:
+        _values: 1
+        _label: VARS_SET
+    prompt_group:
+    prompt_windows:
+    search:
+      _aliases: --search,-s
+      _values: 1
+      _label: APP_NAME
+      index:
+        _values: 1
+        _type: int
+      root_dir:
+        _values: 1
+        _type: dir
+        _label: ROOT_DIRECTORY
+      vars:
+        _values: 1
+        _label: VARS_SET
+    syntax:
+      _info: verify launcher file syntax
+
+  switch_group:
+    _values: '?'
+    _label: GROUP_NAME
+    next:
+    previous:
+
+
