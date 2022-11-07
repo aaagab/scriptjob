@@ -45,7 +45,7 @@ args:
         _allow_siblings: false
 
   launch:
-    _aliases: -l,--launch
+    _aliases: --launch,-l
     _values: '?'
     _label: LAUNCHER_NAME
     _need_child: true
@@ -68,6 +68,7 @@ args:
       _values: 1
       _label: APP_NAME
       index:
+        _aliases: --index,-i
         _values: 1
         _type: int
       root_dir:
@@ -75,6 +76,7 @@ args:
         _type: dir
         _label: ROOT_DIRECTORY
       vars:
+        _aliases: --vars,-v
         _values: 1
         _label: VARS_SET
     syntax:
