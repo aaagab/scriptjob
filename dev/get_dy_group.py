@@ -49,7 +49,7 @@ def get_dy_group_info(group_name, direpa_groups, dy_settings, prompt_group, acti
             prefix="At settings 'default_group'"
             selected_group=dy_settings["default_group"]
         else:
-            pkg.notify.error("At --launch GROUP_NAME has not been provided. Either set 'default_group' in settings or add --prompt-group.", obj_monitor=active_monitor, exit=1)
+            notify.error("At --launch GROUP_NAME has not been provided. Either set 'default_group' in settings or add --prompt-group.", obj_monitor=active_monitor, exit=1)
     else:
         prefix="At GROUP_NAME value from --launch"
         selected_group=group_name
