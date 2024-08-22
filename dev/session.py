@@ -12,19 +12,56 @@ from . import notify
 
 from ..gpkgs.guitools import Monitors, Windows, Regular_windows
 
+class ManageMonitors():
+    def __init__(
+        self,
+        filenpa_settings:str,
+        active_window_hex_id: str,
+    ):
+        self.filenpa_settings=filenpa_settings
+        self.obj_monitors=Monitors()
+        self._dy_monitors_lookup_user_real:dict[int,int]=dict()
+        self.dy_settings:dict[str, str|dict]=dict()
+        self.set_dy_settings()
+        self.set_monitors()
+        self.active_monitor=self.obj_monitors.get_active(active_window_hex_id)
+
+    def set_dy_settings(self):
+        if os.path.exists(self.filenpa_settings):
+            with open(self.filenpa_settings, "r") as f:
+                self.dy_settings=json.load(f)
+        else:
+            with open(self.filenpa_settings, "w") as f:
+                f.write(json.dumps(dict(monitors=dict()), sort_keys=True, indent=4))
+
+
+    def get_monitor_real_index(self, user_index:int):
+        return self._dy_monitors_lookup_user_real[user_index]
+
+    def set_monitors(self):
+        dy_existing_monitors={monitor.name:monitor.index for monitor in self.obj_monitors.monitors}
+
+        if not "monitors" in self.dy_settings:
+            self.dy_settings["monitors"]=dict()
+            with open(self.filenpa_settings, "w") as f:
+                f.write(json.dumps(self.dy_settings, sort_keys=True, indent=4))
+
+        for name in sorted(self.dy_settings["monitors"]):
+            if name in dy_existing_monitors:
+                user_index=self.dy_settings["monitors"][name]
+                self._dy_monitors_lookup_user_real[user_index]=dy_existing_monitors[name]
+
+        setattr(self.obj_monitors, "get_real_index", self.get_monitor_real_index)
+
 class Session():
     def __init__(
         self,
         direpa_tmp,
-        filenpa_settings,
         filenpa_state,
     ):
         self.direpa_tmp=direpa_tmp
-        self.dy_settings=dict()
         self.dy_state=dict()
         self.filenpa_state=filenpa_state
-        self.filenpa_settings=filenpa_settings
-        self.set_dy_settings()
 
         if os.path.exists(self.filenpa_state):
             with open(self.filenpa_state, "r") as f:
@@ -34,12 +71,7 @@ class Session():
                 f.write("{}")
 
         self.dy_state_dump=json.dumps(self.dy_state)
-
         self.active_window_hex_id=Windows.get_active_hex_id()
-        self.obj_monitors=Monitors()
-        self._dy_monitors_lookup_user_real=dict()
-        self.set_monitors()
-        self.active_monitor=self.obj_monitors.get_active(self.active_window_hex_id)
 
         cmd=[
             "wmctrl",
@@ -67,32 +99,7 @@ class Session():
 
         self.update_state()
 
-    def set_dy_settings(self):
-        if os.path.exists(self.filenpa_settings):
-            with open(self.filenpa_settings, "r") as f:
-                self.dy_settings=json.load(f)
-        else:
-            with open(self.filenpa_settings, "w") as f:
-                f.write(json.dumps(dict(monitors=dict()), sort_keys=True, indent=4))
         
-    def get_monitor_real_index(self, user_index):
-        return self._dy_monitors_lookup_user_real[user_index]
-
-    def set_monitors(self):
-        dy_existing_monitors={monitor.name:monitor.index for monitor in self.obj_monitors.monitors}
-
-        if not "monitors" in self.dy_settings:
-            self.dy_settings["monitors"]=dict()
-            with open(self.filenpa_settings, "w") as f:
-                f.write(json.dumps(self.dy_settings, sort_keys=True, indent=4))
-
-        for name in sorted(self.dy_settings["monitors"]):
-            if name in dy_existing_monitors:
-                user_index=self.dy_settings["monitors"][name]
-                self._dy_monitors_lookup_user_real[user_index]=dy_existing_monitors[name]
-
-        setattr(self.obj_monitors, "get_real_index", self.get_monitor_real_index)
-
     def save(self):
         if self.dy_state_dump != json.dumps(self.dy_state):
             with open(self.filenpa_state, "w") as f:
