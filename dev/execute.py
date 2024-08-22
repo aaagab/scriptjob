@@ -8,7 +8,7 @@ import time
 from . import notify
 from .get_dy_group import execute_regexes
 
-from ..gpkgs.guitools import Regular_windows, Keyboard, Mouse
+from ..gpkgs.guitools import Regular_windows, Keyboard, Mouse, Windows
 
 
 def get_window_hex_id(dy_group, active_win_hex_id, value, group_win_hex_ids=None):
@@ -67,14 +67,14 @@ def get_group_win_hex_ids(dy_group):
 def execute(
     dy_state, 
     active_window_hex_id,
-    active_monitor,
+    # active_monitor,
     cmd_names=None,
     window_id=None,
     group_name=None,
-):
+):    
     group_names=sorted(dy_state["groups"])
     if len(group_names) == 0:
-        notify.warning("There is no group to select for execute", obj_monitor=active_monitor)
+        notify.warning("There is no group to select for execute")
         sys.exit(1)
 
     dy_group=None
@@ -84,7 +84,7 @@ def execute(
         try:
             dy_group=dy_state["groups"][group_name]
         except:
-            notify.error("At command execute group name '{}' not found.".format(group_name), obj_monitor=active_monitor)
+            notify.error("At command execute group name '{}' not found.".format(group_name))
             sys.exit(1)
 
     dy_win=None
@@ -98,10 +98,11 @@ def execute(
         try:
             dy_win=dy_group["windows"][str(window_id)]
         except:
-            notify.error("At command execute for group name '{}' window '{}' not found.".format(group_name, window_id), obj_monitor=active_monitor)
+            notify.error("At command execute for group name '{}' window '{}' not found.".format(group_name, window_id))
             sys.exit(1)
 
     if dy_win is None:
+        print("I am here")
         win_ref=dy_group["last_window_ref"]
         Regular_windows.focus(dy_group["windows"][win_ref]["hex_id"])
     else:
@@ -111,7 +112,7 @@ def execute(
             try:
                 cmds=dy_win["execute"][cmd_name]
             except:
-                notify.error("At command execute for group name '{}' at window '{}' command '{}' not found".format(group_name, window_id, cmd_name), obj_monitor=active_monitor)
+                notify.error("At command execute for group name '{}' at window '{}' command '{}' not found".format(group_name, window_id, cmd_name))
                 sys.exit(1)
 
             for cmd in cmds:

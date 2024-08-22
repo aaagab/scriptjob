@@ -7,6 +7,7 @@ if __name__ == "__main__":
     import os
     import sys
     import yaml
+    import time
     direpa_script=os.path.dirname(os.path.realpath(__file__))
     direpa_script_parent=os.path.dirname(direpa_script)
     module_name=os.path.basename(direpa_script)
@@ -44,33 +45,35 @@ if __name__ == "__main__":
         os.makedirs(direpa_tmp, exist_ok=True)
         filenpa_state=os.path.join(direpa_tmp, filen_scriptjob_json)
 
+
         session=pkg.Session(
             direpa_tmp,
-            filenpa_settings,
             filenpa_state,
         )
 
         if args.launch._here:
+            manage_monitors=pkg.ManageMonitors(filenpa_settings, session.active_window_hex_id)
+    
             direpa_groups=os.path.join(etconf.direpa_configuration, "groups")
             if app_mode == "dev":
                 direpa_groups=os.path.join(etconf.direpa_configuration, "groups-dev")
 
             os.makedirs(direpa_groups, exist_ok=True)
 
-            dy_group_info=pkg.get_dy_group_info(args.launch._value, direpa_groups, session.dy_settings, args.launch.prompt_group._here, session.active_monitor)
+            dy_group_info=pkg.get_dy_group_info(args.launch._value, direpa_groups, manage_monitors.dy_settings, args.launch.prompt_group._here, manage_monitors.active_monitor)
             group_name=dy_group_info["name"]
             filenpa_group=dy_group_info["filenpa"]
             session.dy_vars["GROUP"]=group_name
-            dy_group=pkg.get_dy_group(direpa_groups, group_name, filenpa_group, session.dy_settings, session.active_monitor, args.launch.syntax._here)
+            dy_group=pkg.get_dy_group(direpa_groups, group_name, filenpa_group, manage_monitors.dy_settings, manage_monitors.active_monitor, args.launch.syntax._here)
 
             is_prompt_windows=False
             vars_set_name=None
             if args.launch.search._here is True:
                 direpa_pkg=pkg.get_gpkg_path(
-                    session.dy_settings,
+                    manage_monitors.dy_settings,
                     session.dy_vars,
-                    session.filenpa_settings,
-                    session.active_monitor,
+                    filenpa_settings,
+                    manage_monitors.active_monitor,
                     direpa_search=args.launch.search.root_dir._value,
                     app_name=args.launch.search._value,
                     index=args.launch.search.index._value,
@@ -80,6 +83,7 @@ if __name__ == "__main__":
                 session.dy_vars["PATH_APP"]=direpa_pkg
                 vars_set_name=args.launch.search.vars._value
             elif args.launch.from_._here is True:
+                
                 if args.launch.from_._value is None:
                     session.dy_vars["PATH_APP"]=os.getcwd()
                 else:
@@ -95,24 +99,24 @@ if __name__ == "__main__":
                 is_prompt_windows=True
             else:
                 error_message=get_msg("missing one required argument from", args.launch, [args.launch.from_, args.launch.search, args.launch.prompt_windows])
-                pkg.notify.error(error_message, obj_monitor=session.active_monitor, exit=1)
+                pkg.notify.error(error_message, obj_monitor=manage_monitors.active_monitor, exit=1)
 
             dy_vars=dict()
             if is_prompt_windows is False:
                 if "variables" in dy_group:
                     var_key="vars_default_sets"
-                    if var_key in session.dy_settings:
+                    if var_key in manage_monitors.dy_settings:
                         if vars_set_name is None:
-                            if group_name in session.dy_settings[var_key]:
-                                vars_set_name=session.dy_settings[var_key][group_name]
+                            if group_name in manage_monitors.dy_settings[var_key]:
+                                vars_set_name=manage_monitors.dy_settings[var_key][group_name]
                             else:
-                                pkg.notify.error("launcher '{}' not found as a key in '{}' at '{}'.".format(group_name, var_key, session.filenpa_settings), obj_monitor=session.active_monitor, exit=1)
+                                pkg.notify.error("launcher '{}' not found as a key in '{}' at '{}'.".format(group_name, var_key, filenpa_settings), obj_monitor=manage_monitors.active_monitor, exit=1)
                         if vars_set_name in dy_group["variables"]:
                             dy_vars=dy_group["variables"][vars_set_name]
                         else:
-                            pkg.notify.error("For launcher '{}' key '{}' not found in 'variables' at '{}'.".format(group_name, vars_set_name, var_key, filenpa_group), obj_monitor=session.active_monitor, exit=1)        
+                            pkg.notify.error("For launcher '{}' key '{}' not found in 'variables' at '{}'.".format(group_name, vars_set_name, filenpa_group), obj_monitor=manage_monitors.active_monitor, exit=1)        
                     else:
-                        pkg.notify.error("'{}' not set in '{}'.".format(var_key, session.filenpa_settings), obj_monitor=session.active_monitor, exit=1)
+                        pkg.notify.error("'{}' not set in '{}'.".format(var_key, filenpa_settings), obj_monitor=manage_monitors.active_monitor, exit=1)
 
                     for var_name in sorted(dy_vars):
                         dy_vars[var_name]=dy_vars[var_name].format(**session.dy_vars)
@@ -124,20 +128,24 @@ if __name__ == "__main__":
                 dy_vars,
                 is_prompt_windows,
                 session.active_window_hex_id,
-                session.active_monitor,
-                session.obj_monitors,
+                manage_monitors.active_monitor,
+                manage_monitors.obj_monitors,
                 session.dy_desktop_windows,
             )
+            
+
         elif args.execute._here:
             pkg.execute(
                 session.dy_state,
                 session.active_window_hex_id,
-                session.active_monitor,
                 cmd_names=args.execute._values,
                 window_id=args.execute.window._value,
                 group_name=args.execute.group._value,
             )
+            
+
         elif args.switch_group._here:
+            manage_monitors=pkg.ManageMonitors(filenpa_settings, session.active_window_hex_id)
             direction=None
             if args.switch_group._value is None:
                 if args.switch_group.previous._here:
@@ -147,21 +155,25 @@ if __name__ == "__main__":
 
             pkg.switch_group(
                 session.dy_state,
-                session.active_monitor,
+                manage_monitors.active_monitor,
                 session.active_window_hex_id,
                 direction,
                 group_name=args.switch_group._value
             )
+
         elif args.close._here:
+            manage_monitors=pkg.ManageMonitors(filenpa_settings, session.active_window_hex_id)
             pkg.close(
                 session.dy_state,
-                session.active_monitor,
-                session.obj_monitors,
+                manage_monitors.active_monitor,
+                manage_monitors.obj_monitors,
                 to_close_group_names=args.close._values,
                 close_all=args.close.all._here,
             )
+
         elif args.focus._here:
             if args.focus.window._here:
+
                 window_type=None
                 if args.focus.window.active_group._here:
                     if args.focus.window.active_group.last._here:
@@ -175,11 +187,11 @@ if __name__ == "__main__":
 
                 pkg.focus_window(
                     session.dy_state,
-                    session.active_monitor,
                     session.active_window_hex_id,
                     window_type=window_type,
                 )
             elif args.focus.group._here:
+                manage_monitors=pkg.ManageMonitors(filenpa_settings, session.active_window_hex_id)
                 command=None
                 if args.focus.group.last._here:
                     command="last"
@@ -196,9 +208,9 @@ if __name__ == "__main__":
 
                 pkg.focus_group(
                     session.dy_state,
-                    session.active_monitor,
+                    manage_monitors.active_monitor,
                     session.active_window_hex_id,
-                    session.obj_monitors,
+                    manage_monitors.obj_monitors,
                     session.dy_existing_regular_windows,
                     session.dy_desktop_windows,
                     command=command,

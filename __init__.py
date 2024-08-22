@@ -2,7 +2,7 @@
 # authors: Gabriel Auger
 # name: scriptjob
 # licenses: MIT
-__version__= "11.2.0"
+__version__= "11.3.0"
 
 # from .gpkgs.options import Options
 from .gpkgs.nargs import Nargs, EndUserError
@@ -16,5 +16,6 @@ from .dev.focus_window import focus_window
 from .dev.get_dy_group import get_dy_group, get_dy_group_info
 from .dev.get_gpkg_path import get_gpkg_path
 from .dev.launch import launch
-from .dev.session import Session
+from .dev.session import Session, ManageMonitors
 from .dev.switch_group import switch_group
+from .dev.timeit import TimeIt
