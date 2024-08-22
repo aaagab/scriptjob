@@ -72,7 +72,7 @@ def launch(
                 prompt_text="Choose Window '{}'".format(dy_win["name"]),
             )).loop().output
 
-            if window is "_aborted":
+            if window == "_aborted":
                 notify.warning("open command canceled.", obj_monitor=active_monitor, exit=1)
 
             notify.success("window '{}' selected.".format(window.name), obj_monitor=active_monitor)

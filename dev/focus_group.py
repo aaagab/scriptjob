@@ -58,7 +58,7 @@ def focus_group(
             prompt_text="Choose a window to add to focus group.",
         )).loop().output
 
-        if window is "_aborted":
+        if window == "_aborted":
             notify.warning("--focus-group --add canceled.", obj_monitor=active_monitor, exit=1)
 
         if window.hex_id in wins:
