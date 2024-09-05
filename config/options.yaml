@@ -61,6 +61,10 @@ args:
       vars:
         _values: 1
         _label: VARS_SET
+    groups:
+      _type: dir
+      _info: provide groups directory path
+
     prompt_group:
     prompt_windows:
     search:
@@ -81,6 +85,11 @@ args:
         _label: VARS_SET
     syntax:
       _info: verify launcher file syntax
+
+
+  state:
+    _info: provide alternate path state file
+    _type: vpath
 
   switch_group:
     _values: '?'

@@ -3,12 +3,13 @@
         "Gabriel Auger"
     ],
     "deps": [
-        "a1c744b9-f712-43fa-bf83-60ad15122cea|bwins|2.1.1|gpm",
+        "a1c744b9-f712-43fa-bf83-60ad15122cea|bwins|3.1.1|gpm",
         "fe9fbe81-806f-4e85-8042-aaa33ce02d6a|etconf|2.2.5|gpm",
-        "f128844d-236e-4c1e-8537-92b2d57ffc76|guitools|4.5.7|gpm",
+        "f128844d-236e-4c1e-8537-92b2d57ffc76|guitools|6.0.2|gpm",
         "cf09346e-b436-4259-b6dd-e56516b508a5|message|8.1.2|gpm",
         "89d8676a-6b02-43fa-8694-e97de5680cd0|nargs|5.1.2|gpm",
-        "28deaa04-a109-4dd3-9a04-ee896c96af6d|notification|3.2.2|gpm"
+        "28deaa04-a109-4dd3-9a04-ee896c96af6d|notification|4.0.1|gpm",
+        "5d626d01-c4cb-4db1-bf99-02357479ce3c|timeit|1.1.0|gpm"
     ],
     "description": "Scriptjob is a coding production tool. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Actions are defined in another application called 'scriptjob_actions'. scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (I am using xbindkeys).",
     "filen_main": "main.py",
@@ -18,7 +19,7 @@
         "MIT"
     ],
     "name": "scriptjob",
-    "timestamp": 1724297332.8226695,
+    "timestamp": 1725568785.4534557,
     "uuid4": "43f5e40b-e7e7-4ee6-b3d9-0c6b1e29e795",
-    "version": "11.3.0"
+    "version": "12.0.0"
 }
