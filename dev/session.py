@@ -126,7 +126,8 @@ class Session():
                 self.load_state(s=self.state, d=json.load(f))
                 self.update_state()
         else:
-            open(self.filenpa_state, "w").close()
+            with open(self.filenpa_state, "w") as f:
+                f.write(self.state.to_json())
 
         self._state_dump=self.state.to_json()
 
