@@ -1,185 +1,287 @@
 #!/usr/bin/env python3
-from pprint import pprint
 import json
 import getpass
 import os
-import subprocess
-import sys
 import time
-import tempfile
+from Xlib.X import AnyPropertyType
 
-from . import notify
+from ..gpkgs.guitools import Windows as Windows, XlibHelpers, WindowType
 
-from ..gpkgs.guitools import Monitors, Windows, Regular_windows
+class State():
+    def __init__(self) -> None:
+        self.active_group:str|None=None
+        self.focus=Focus()
+        self.groups:list[Group]=[]
+        self.last_window_id:str|None=None
 
-class ManageMonitors():
-    def __init__(
-        self,
-        filenpa_settings:str,
-        active_window_hex_id: str,
-    ):
-        self.filenpa_settings=filenpa_settings
-        self.obj_monitors=Monitors()
-        self._dy_monitors_lookup_user_real:dict[int,int]=dict()
-        self.dy_settings:dict[str, str|dict]=dict()
-        self.set_dy_settings()
-        self.set_monitors()
-        self.active_monitor=self.obj_monitors.get_active(active_window_hex_id)
+    def to_json(self):
+        return json.dumps(self, default=lambda o: o.__dict__, sort_keys=True, indent=4)
 
-    def set_dy_settings(self):
-        if os.path.exists(self.filenpa_settings):
-            with open(self.filenpa_settings, "r") as f:
-                self.dy_settings=json.load(f)
+class Focus():
+    def __init__(self) -> None:
+        self.last_window_id:str|None=None
+        self.windows:list[str]=[]
+
+class Execute():
+    def __init__(self,
+        shortcut:str,
+        commands:list[str],
+    ) -> None:
+        self.shortcut:str=shortcut
+        self.commands:list[str]=commands
+
+class Window():
+    def __init__(self,
+        ref:int,
+        hex_id:str|None,
+        execute:list[Execute],
+        refs:list[int],
+        timestamp:float|None=None,
+    ) -> None:
+        self.ref:int=ref
+        self.execute:list[Execute]=execute
+        self.hex_id:str
+        if hex_id is not None:
+            self.hex_id=hex_id
+        self.refs:list[int]=refs
+        self.timestamp:float
+        if timestamp is None:
+            self.timestamp=time.time()
         else:
-            with open(self.filenpa_settings, "w") as f:
-                f.write(json.dumps(dict(monitors=dict()), sort_keys=True, indent=4))
+            self.timestamp=timestamp
 
+class Group():
+    def __init__(self,
+        name:str,
+        windows:list[Window],
+        last_window_ref:int|None=None,
+        timestamp:float|None=None,
+    ) -> None:
+        self.name:str=name
+        self.last_window_ref:int|None=last_window_ref
+        self.timestamp:float
+        if timestamp is None:
+            self.timestamp=time.time()
+        else:
+            self.timestamp=timestamp
+        self.windows:list[Window]=windows
 
-    def get_monitor_real_index(self, user_index:int):
-        return self._dy_monitors_lookup_user_real[user_index]
-
-    def set_monitors(self):
-        dy_existing_monitors={monitor.name:monitor.index for monitor in self.obj_monitors.monitors}
-
-        if not "monitors" in self.dy_settings:
-            self.dy_settings["monitors"]=dict()
-            with open(self.filenpa_settings, "w") as f:
-                f.write(json.dumps(self.dy_settings, sort_keys=True, indent=4))
-
-        for name in sorted(self.dy_settings["monitors"]):
-            if name in dy_existing_monitors:
-                user_index=self.dy_settings["monitors"][name]
-                self._dy_monitors_lookup_user_real[user_index]=dy_existing_monitors[name]
-
-        setattr(self.obj_monitors, "get_real_index", self.get_monitor_real_index)
+class Vars():
+    def __init__(self, direpa_tmp:str):
+        self.GROUP:str|None=None
+        self.PATH_APP:str|None=None
+        self.PWD:str=os.getcwd()
+        self.SEP:str=os.path.sep
+        self.TMP_FILE:str=os.path.join(direpa_tmp, "scriptjob-tmp-"+str(time.time()).replace(".", ""))
+        self.USER:str=getpass.getuser()
+        self.USERPROFILE:str=os.path.expanduser("~")
 
 class Session():
     def __init__(
         self,
-        direpa_tmp,
-        filenpa_state,
-    ):
+        direpa_tmp:str,
+        filenpa_state:str,
+    ) -> None:
         self.direpa_tmp=direpa_tmp
-        self.dy_state=dict()
+        self.state=State()
+        self.tmp_state=State()
+
         self.filenpa_state=filenpa_state
 
+        self.xlib=XlibHelpers()
+
+        self.active_window_hex_id=self.xlib.get_active_window_hex_id()
+        self.dy_existing_regular_windows:dict[str,str]=dict()
+        self.desktop_win_hex_ids:list[str]=[]
+
+        prop = self.xlib.root.get_full_property(self.xlib.display.get_atom("_NET_CLIENT_LIST"), property_type=AnyPropertyType)
+        if prop is None:
+            raise NotImplementedError()
+        client_list=prop.value
+        for window_id in client_list:
+            xwin = self.xlib.display.create_resource_object('window', window_id)
+            prop = xwin.get_full_property(self.xlib.display.get_atom("_NET_WM_WINDOW_TYPE"), property_type=AnyPropertyType)
+            if prop is not None:
+                values=list(prop.value)
+                if WindowType.DESKTOP.value in values:
+                    self.desktop_win_hex_ids.append(hex(window_id))
+                elif WindowType.DOCK.value in values:
+                    self.desktop_win_hex_ids.append(hex(window_id))
+                else:
+                    win_name:str="unknown"
+                    prop = xwin.get_full_property(self.xlib.display.get_atom("_NET_WM_NAME"), property_type=AnyPropertyType)
+                    if prop is not None:
+                        win_name=prop.value.decode()[:40]
+
+                    class_name:str="unknown"
+                    obj_class=xwin.get_wm_class()
+                    if obj_class is not None:
+                        class_name=obj_class[-1]
+
+                    full_name=f"{class_name} - {win_name}"
+                    self.dy_existing_regular_windows[hex(window_id)]=full_name
+                    
         if os.path.exists(self.filenpa_state):
             with open(self.filenpa_state, "r") as f:
-                self.dy_state=json.load(f)
+                self.load_state(s=self.state, d=json.load(f))
+                self.update_state()
         else:
-            with open(self.filenpa_state, "w") as f:
-                f.write("{}")
+            open(self.filenpa_state, "w").close()
 
-        self.dy_state_dump=json.dumps(self.dy_state)
-        self.active_window_hex_id=Windows.get_active_hex_id()
+        self._state_dump=self.state.to_json()
 
-        cmd=[
-            "wmctrl",
-            "-lpx",
-        ]
-        self.dy_existing_regular_windows=dict()
-        self.dy_desktop_windows=dict()
-        for line in subprocess.check_output(cmd).decode().rstrip().splitlines():
-            line_elems=line.split()
-            hex_id=hex(int(line_elems[0], 16))
-            name="{} - {}".format(line_elems[3].split(".")[0], " ".join(line_elems[5:]))[:40]
-            if line_elems[1] == "-1":
-                self.dy_desktop_windows[hex_id]=name
-            else:
-                self.dy_existing_regular_windows[hex_id]=name
+        self.vars=Vars(direpa_tmp=direpa_tmp)
 
-        self.dy_vars=dict(
-            PATH_APP=None,
-            PWD=os.getcwd(),
-            SEP=os.path.sep,
-            TMP_FILE=os.path.join(self.direpa_tmp, "scriptjob-tmp-"+str(time.time()).replace(".", "")),
-            USER=getpass.getuser(),
-            USERPROFILE=os.path.expanduser("~"),
-        )
 
-        self.update_state()
+    def load_state(self, s:State, d:dict):
+        for key, value in sorted(d.items()):
+            if key == "active_group":
+                if isinstance(value, str):
+                    s.active_group=value
+            elif key == "last_window_id":
+                if isinstance(d[key], str):
+                    s.last_window_id=d[key]
+            elif key == "focus":
+                if isinstance(d[key], dict):
+                    if "last_window_id" in d[key]:
+                        if isinstance(d[key]["last_window_id"], str):
+                            s.focus.last_window_id=d[key]["last_window_id"]
+                    if "windows" in d[key]:
+                        if isinstance(d[key]["windows"], list):
+                            for w in d[key]["windows"]:
+                                if isinstance(w, str):
+                                    s.focus.windows.append(w)
+            elif key == "groups":
+                if isinstance(d[key], list):
+                    for group in d[key]:
+                        if isinstance(group, dict):
+                            group_name:str|None=None
+                            last_window_ref:int|None=None
+                            gtimestamp:float|None=None
+                            windows:list[Window]|None=None
+                            if "name" in group and isinstance(group["name"], str):
+                                group_name=group["name"]
+                            if "last_window_ref" in group and isinstance(group["last_window_ref"], int):
+                                last_window_ref=group["last_window_ref"]
+                            if "timestamp" in group and isinstance(group["timestamp"], float):
+                                gtimestamp=group["timestamp"]
+                            if "windows" in group and isinstance(group["windows"], list):
+                                for win in group["windows"]:
+                                    hex_id:str|None=None
+                                    execute:list[Execute]|None=None
+                                    refs:list[int]|None=None
+                                    ref:int|None=None
+                                    timestamp:float|None=None
+                                    if isinstance(win, dict):
+                                        if "execute" in win and isinstance(win["execute"], list):
+                                            for exec in win["execute"]:
+                                                if isinstance(exec, dict):
+                                                    shortcut:str|None=None
+                                                    commands:list[str]|None=None
+                                                    if "shortcut" in exec and isinstance(exec["shortcut"], str):
+                                                        shortcut=exec["shortcut"]
+                                                    if "commands" in exec and isinstance(exec["commands"], list):
+                                                        for c in exec["commands"]:
+                                                            if isinstance(c, str):
+                                                                if commands is None:
+                                                                    commands=[]
+                                                                commands.append(c)
+                                                    if shortcut is not None and commands is not None:
+                                                        if execute is None:
+                                                            execute=[]
+                                                        execute.append(Execute(shortcut=shortcut, commands=commands))
+                                                    
+                                        if "hex_id" in win and isinstance(win["hex_id"], str):
+                                            hex_id=win["hex_id"]
+                                        if "ref" in win and isinstance(win["ref"], int):
+                                            ref=win["ref"]
+                                        if "refs" in win and isinstance(win["refs"], list):
+                                            if refs is None:
+                                                refs=[]
+                                            for r in win["refs"]:
+                                                if isinstance(r, int):
+                                                    refs.append(r)
+                                        if "timestamp" in win and isinstance(win["timestamp"], float):
+                                            timestamp=win["timestamp"]
 
-        
+                                    if hex_id is not None and execute is not None and refs is not None and timestamp is not None and ref is not None:
+                                        if windows is None:
+                                            windows=[]
+                                        windows.append(Window(
+                                            ref=ref,
+                                            hex_id=hex_id,
+                                            execute=execute,
+                                            refs=refs,
+                                            timestamp=timestamp,
+                                        ))
+
+                            if group_name is not None and last_window_ref is not None and gtimestamp is not None and windows is not None:
+                                s.groups.append(Group(
+                                    name=group_name,
+                                    timestamp=gtimestamp,
+                                    windows=windows,
+                                    last_window_ref=last_window_ref,
+                                ))
+
     def save(self):
-        if self.dy_state_dump != json.dumps(self.dy_state):
+        current_dump=self.state.to_json()
+        if self._state_dump != current_dump:
             with open(self.filenpa_state, "w") as f:
-                f.write(json.dumps(self.dy_state, sort_keys=True, indent=4))
+                f.write(current_dump)
 
-    def update_state(self):
-        if not "active_group" in self.dy_state:
-            self.dy_state["active_group"]=None
-
-        if not "last_window_id" in self.dy_state or not self.dy_state["last_window_id"] in self.dy_existing_regular_windows:
-            self.dy_state["last_window_id"]=None
-
-        if not "focus" in self.dy_state:
-            self.dy_state["focus"]=dict()
+    def update_state(self) -> None:
+        if self.state.last_window_id not in self.dy_existing_regular_windows:
+            self.state.last_window_id=None
         
-        if not "windows" in self.dy_state["focus"]:
-            self.dy_state["focus"]["windows"]=[]
+        if self.state.focus.last_window_id not in self.dy_existing_regular_windows:
+            self.state.focus.last_window_id=None
 
-        if not "last_window_id" in self.dy_state["focus"]:
-            self.dy_state["focus"]["last_window_id"]=None
+        focus_windows=[]
+        for w in self.state.focus.windows:
+            if w in self.dy_existing_regular_windows:
+                focus_windows.append(w)
 
-        if self.dy_state["focus"]["last_window_id"] is not None:
-            if self.dy_state["focus"]["last_window_id"] not in self.dy_existing_regular_windows:
-                if len(self.dy_state["focus"]["windows"]) > 0:
-                    self.dy_state["focus"]["last_window_id"]=self.dy_state["focus"]["windows"][-1]
+        self.state.focus.windows=focus_windows
+
+        if self.state.focus.last_window_id is None and len(self.state.focus.windows) > 0:
+            self.state.focus.last_window_id=self.state.focus.windows[-1]
+
+        dy_group_timestamps:dict[float, str]=dict()
+        for group in self.state.groups:
+            dy_window_timestamps:dict[float, int]=dict()
+            for window in group.windows.copy():
+                if window.hex_id in self.dy_existing_regular_windows:
+                    dy_window_timestamps[window.timestamp]=window.ref
                 else:
-                    self.dy_state["focus"]["last_window_id"]=None
+                    if group.last_window_ref == window.ref:
+                        group.last_window_ref=None
+                    group.windows.remove(window)
 
-        for window_id in self.dy_state["focus"]["windows"].copy():
-            if not window_id in self.dy_existing_regular_windows:
-                self.dy_state["focus"]["windows"].remove(window_id)
-        
-        if not "groups" in self.dy_state:
-            self.dy_state["groups"]=dict()
+            if len(group.windows) > 0:
+                if group.last_window_ref not in [w.ref for w in group.windows]:
+                    group.last_window_ref=[dy_window_timestamps[t] for t in sorted(dy_window_timestamps)][-1]
 
-        dy_group_timestamps=dict()
-        for group_name in sorted(self.dy_state["groups"]):
-            dy_group=self.dy_state["groups"][group_name]
-      
-            dy_window_timestamps=dict()
-            for ref_num in sorted(dy_group["windows"]):
-                dy_window=dy_group["windows"][ref_num]
-                if dy_window["hex_id"] in self.dy_existing_regular_windows:
-                    dy_window_timestamps[dy_window["timestamp"]]=ref_num
-                else:
-                    del dy_group["windows"][ref_num]
-                    if dy_group["last_window_ref"] == ref_num:
-                        dy_group["last_window_ref"]=None  
-
-            if len(dy_group["windows"]) > 0:
-                if dy_group["last_window_ref"] not in dy_group["windows"]:
-                    for timestamp in sorted(dy_window_timestamps, reverse=True):
-                        dy_group["last_window_ref"]=dy_window_timestamps[timestamp]
-                        break
-
-                for ref_num in sorted(dy_group["windows"]):
-                    dy_window=dy_group["windows"][ref_num]
-                    for other_ref_num in dy_window["refs"].copy():
-                        if other_ref_num not in dy_group["windows"]:
-                            dy_window["execute"]=[]
-                            dy_window["refs"]=[]
+                for window in group.windows:
+                    for ref in window.refs.copy():
+                        if ref not in [w.ref for w in group.windows]:
+                            window.execute=[]
+                            window.refs=[]
                             break
                         
-                dy_group_timestamps[dy_group["timestamp"]]=group_name
+                dy_group_timestamps[group.timestamp]=group.name
             else:
-                del self.dy_state["groups"][group_name]
-                if self.dy_state["active_group"] == group_name:
-                    self.dy_state["active_group"]=None
+                if self.state.active_group == group.name:
+                    self.state.active_group=None
+                self.state.groups.remove(group)
 
-        if len(self.dy_state["groups"]) > 0:
-            if self.dy_state["active_group"] not in self.dy_state["groups"]:
-                for timestamp in sorted(dy_group_timestamps, reverse=True):
-                    self.dy_state["active_group"]=dy_group_timestamps[timestamp]
-                    break
+        if len(self.state.groups) > 0:
+            if self.state.active_group not in [g.name for g in self.state.groups]:
+                self.state.active_group=[dy_group_timestamps[t] for t in sorted(dy_group_timestamps)][-1]
 
-            if self.dy_state["last_window_id"] is None:
-                active_group=self.dy_state["active_group"]
-                last_window_ref=self.dy_state["groups"][active_group]["last_window_ref"]
-                self.dy_state["last_window_id"]=self.dy_state["groups"][active_group]["windows"][last_window_ref]["hex_id"]
+            if self.state.last_window_id is None:
+                active_group=[g for g in self.state.groups if g.name == self.state.active_group][0]
+                self.state.last_window_id=[w for w in active_group.windows if w.ref == group.last_window_ref][0].hex_id
         else:
-            self.dy_state["active_group"]=None
-            if self.dy_state["last_window_id"] is None:
-                self.dy_state["last_window_id"]=self.active_window_hex_id
+            self.state.active_group=None
+            if self.state.last_window_id is None:
+                self.state.last_window_id=self.active_window_hex_id

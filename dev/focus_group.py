@@ -4,26 +4,28 @@ import os
 import sys
 
 from . import notify
-from .custom_windows import Window_Prompt, Custom_check_box_list
+from .session import State
+from .custom_windows import WindowPrompt, CustomCheckBoxList, WindowPromptOptions
 
-from ..gpkgs.guitools import Regular_windows
+from ..gpkgs.guitools import XlibHelpers
+from ..gpkgs.bwins import CheckBoxListOptions, Monitors, CheckBoxItem
 
 def focus_group(
-    dy_state,
-    active_monitor,
-    active_window_hex_id,
-    obj_monitors,
-    dy_existing_regular_windows,
-    dy_desktop_windows,
-    command,
+    state:State,
+    active_window_hex_id:str,
+    dy_existing_regular_windows:dict[str,str],
+    desktop_win_hex_ids:list[str],
+    command:str,
 ):
-    wins=dy_state["focus"]["windows"]
+    xlib=XlibHelpers()
+    wins=state.focus.windows
     if command != "add":
         if len(wins) == 0:
-            notify.warning("Focus group has no windows. Add a window first with --focus-group --add.", obj_monitor=active_monitor, exit=1)
+            notify.warning("Focus group has no windows. Add a window first with --focus-group --add.")
+            sys.exit(1)
 
     if command in ["last", "next", "previous"]:
-        last_window_id=dy_state["focus"]["last_window_id"]
+        last_window_id=state.focus.last_window_id
         if active_window_hex_id in wins:
             selected_id=None
             if command == "last":
@@ -47,72 +49,75 @@ def focus_group(
             selected_id=last_window_id
 
         if selected_id is not None:
-            Regular_windows().focus(selected_id)
+            xlib.focus_window(hex_id=selected_id)
             if selected_id in wins:
-                dy_state["focus"]["last_window_id"]=selected_id
+                state.focus.last_window_id=selected_id
     elif command == "add":
-        window=Window_Prompt(options=dict(
-            desktop_win_hex_ids=sorted(dy_desktop_windows),
-            monitor=active_monitor,
-            obj_monitors=obj_monitors,
+        window=WindowPrompt(WindowPromptOptions(
+            desktop_win_hex_ids=desktop_win_hex_ids,
+            monitor=Monitors().get_primary_monitor(),
             prompt_text="Choose a window to add to focus group.",
         )).loop().output
 
-        if window == "_aborted":
-            notify.warning("--focus-group --add canceled.", obj_monitor=active_monitor, exit=1)
+        if window is None:
+            notify.warning("--focus-group --add canceled.")
+            sys.exit(1)
 
         if window.hex_id in wins:
-            notify.warning("window '{}' is already part of focus group.".format(window.name), obj_monitor=active_monitor, exit=1)
+            notify.warning("window '{}' is already part of focus group.".format(window.name))
+            sys.exit(1)
 
         wins.append(window.hex_id)
-        dy_state["focus"]["last_window_id"]=window.hex_id
-        notify.success("window '{}' selected.".format(window.name), obj_monitor=active_monitor)
+        state.focus.last_window_id=window.hex_id
+        notify.success("window '{}' selected.".format(window.name))
         
         window.focus()
 
     elif command == "delete":
-        win_names=[]
+        items:list[CheckBoxItem]=[]
         for hex_id in wins:
-            win_names.append(dy_existing_regular_windows[hex_id])
+            items.append(CheckBoxItem(
+                label=dy_existing_regular_windows[hex_id],
+                value=hex_id,
+                checked=False,
+            ))
 
-        options=dict(
-            monitor=active_monitor,
-            items=win_names,
-            values=wins,
+        options=CheckBoxListOptions(
+            monitor=Monitors().get_primary_monitor(),
+            items=items,
             prompt_text="Select window(s) to close: ",
             title="Scriptjob Focus group delete",
-            checked=[False] * len(wins),
         )
 
-        output=Custom_check_box_list(options, wins).loop().output
+        output=CustomCheckBoxList(options, wins).loop().output
 
-        if output == "_aborted" or len(output) == 0:
-            notify.warning("Scriptjob close canceled.", obj_monitor=active_monitor)
+        if output is None or len(output.indexes) == 0:
+            notify.warning("Scriptjob close canceled.")
             sys.exit(1)
 
-        groups_hex_ids=[]
-        for name in dy_state["groups"]:
-            dy_group=dy_state["groups"][name]
-            for win_ref in dy_group["windows"]:
-                groups_hex_ids.append(dy_group["windows"][win_ref]["hex_id"])
+        groups_hex_ids:list[str]=[]
+        for group in state.groups:
+            for window in group.windows:
+                if window.hex_id is not None:
+                    groups_hex_ids.append(window.hex_id)
 
-        for hex_id in output:
+        for hex_id in output.values:
             if hex_id not in groups_hex_ids:
-                Regular_windows.close(hex_id)
+                xlib.close(hex_id=hex_id)
             wins.remove(hex_id)
 
-        if dy_state["focus"]["last_window_id"] is None:
+        if state.focus.last_window_id is None:
             if len(wins) > 0:
-                dy_state["focus"]["last_window_id"]=wins[-1]
+                state.focus.last_window_id=wins[-1]
         else:
-            if dy_state["focus"]["last_window_id"] not in wins:
+            if state.focus.last_window_id not in wins:
                 if len(wins) > 0:
-                    dy_state["focus"]["last_window_id"]=wins[-1]
+                    state.focus.last_window_id=wins[-1]
                 else:
-                    dy_state["focus"]["last_window_id"]=None
+                    state.focus.last_window_id=None
     elif command == "toggle":
-        focus_last_window_id=dy_state["focus"]["last_window_id"]
-        groups_last_window_id=dy_state["last_window_id"]
+        focus_last_window_id=state.focus.last_window_id
+        groups_last_window_id=state.last_window_id
 
         # if active window is last focus window id then
         #     I go to last window Id from dy_state.
@@ -125,40 +130,14 @@ def focus_group(
         #             then active group last window_Ref is set with active_window ref
 
         if active_window_hex_id == focus_last_window_id:
-            Regular_windows().focus(groups_last_window_id)
+            if groups_last_window_id is not None:
+                xlib.focus_window(hex_id=groups_last_window_id)
         else:
-            Regular_windows().focus(focus_last_window_id)
-            if active_window_hex_id not in dy_state["focus"]["windows"]:
-                dy_state["last_window_id"]=active_window_hex_id
-                dy_group=dy_state["groups"][dy_state["active_group"]]
-                dy_group_ids={ dy_group["windows"][ref]["hex_id"]: ref  for ref in dy_group["windows"] }
+            if focus_last_window_id is not None:
+                xlib.focus_window(hex_id=focus_last_window_id)
+            if active_window_hex_id not in state.focus.windows:
+                state.last_window_id=active_window_hex_id
+                group=[g for g in state.groups if g.name == state.active_group][0]
+                dy_group_ids={ w.hex_id: w.ref for w in group.windows}
                 if active_window_hex_id in dy_group_ids:
-                    dy_group["last_window_ref"]=dy_group_ids[active_window_hex_id]
-
-        #     # go back to last active_window            
-
-
-        # focus_last_window_id=None
-        # if dy_state["active_group"] is not None:
-        #     # {key: value for (key, value) in iterable}
-        #     dy_group=dy_state["groups"][dy_state["active_group"]]
-
-        #     pprint(dy_group_ids)
-
-        #     sys.exit()
-        #     if active_window_hex_id in dy_group_ids:
-        #         dy_group["last_window_ref"]=dy_group_ids[active_window_hex_id]
-        #     else:
-        #         pass
-        # # else:
-        #     # focus_last_window_id=dy_state["focus"]["last_window_id"]
-        # # pprint(dy_state)
-        # # sys.exit()
-        # # if active_window_hex_id
-        # groups_last_window_id=dy_state["last_window_id"]
-        # if active_window_hex_id == focus_last_window_id:
-        #     Regular_windows().focus(groups_last_window_id)
-        # elif active_window_hex_id == groups_last_window_id:
-        #     Regular_windows().focus(focus_last_window_id)
-        # else:        
-        #     Regular_windows().focus(focus_last_window_id)
+                    group.last_window_ref=dy_group_ids[active_window_hex_id]

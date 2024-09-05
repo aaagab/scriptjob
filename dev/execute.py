@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from pprint import pprint
+from typing import Any, cast
 import re
 import os
 import sys
@@ -8,21 +9,27 @@ import time
 from . import notify
 from .get_dy_group import execute_regexes
 
-from ..gpkgs.guitools import Regular_windows, Keyboard, Mouse, Windows
+from .session import State, Group, Window
+
+from ..gpkgs.guitools import Windows, Keyboard, Mouse, XlibHelpers
 
 
-def get_window_hex_id(dy_group, active_win_hex_id, value, group_win_hex_ids=None):
+def get_window_hex_id(group:Group, active_win_hex_id:str, value:str, group_win_hex_ids:list[str]|None=None):
     if group_win_hex_ids is None:
-        group_win_hex_ids=get_group_win_hex_ids(dy_group)
+        group_win_hex_ids=get_group_win_hex_ids(group)
 
     if value == "last":
-        win_ref=dy_group["last_window_ref"]
-        dy_win=dy_group["windows"][win_ref]
+        win_ref=group.last_window_ref
+        window:Window
+        try:
+            window=[w for w in group.windows if w.ref == win_ref][0]
+        except IndexError:
+            raise NotImplementedError()
 
         if len(group_win_hex_ids) <= 1:
             return None
         else:
-            if active_win_hex_id == dy_win["hex_id"]:
+            if active_win_hex_id == window.hex_id:
                 win_index=group_win_hex_ids.index(active_win_hex_id)
                 is_first=(win_index == group_win_hex_ids[0])
                 if is_first is True:
@@ -30,7 +37,7 @@ def get_window_hex_id(dy_group, active_win_hex_id, value, group_win_hex_ids=None
                 else:
                     return group_win_hex_ids[win_index-1]
             else:
-                return dy_win["hex_id"]
+                return window.hex_id
     elif value in ["next", "previous"]:
         if len(group_win_hex_ids) <= 1:
             return None
@@ -50,69 +57,79 @@ def get_window_hex_id(dy_group, active_win_hex_id, value, group_win_hex_ids=None
                     return group_win_hex_ids[win_index-1]
     else:
         # value equals win_ref as str
-        return dy_group["windows"][value]["hex_id"]
+        try:
+            return [w.hex_id for w in group.windows if w.ref == int(value)][0]
+        except IndexError:
+            raise NotImplementedError()
 
-def get_group_win_hex_ids(dy_group):
-    dy_timestamp=dict()
-    for index in dy_group["windows"]:
-        dy_win=dy_group["windows"][index]
-        dy_timestamp[dy_win["timestamp"]]=dy_win["hex_id"]
+def get_group_win_hex_ids(group:Group):
+    dy_timestamp:dict[float, str]=dict()
+    for w in group.windows:
+        dy_timestamp[w.timestamp]=w.hex_id
 
-    group_win_hex_ids=[]
+    group_win_hex_ids:list[str]=[]
     for timestamp in sorted(dy_timestamp):
         group_win_hex_ids.append(dy_timestamp[timestamp])
 
     return group_win_hex_ids
 
 def execute(
-    dy_state, 
-    active_window_hex_id,
-    # active_monitor,
-    cmd_names=None,
-    window_id=None,
-    group_name=None,
+    state:State, 
+    active_window_hex_id:str,
+    shortcuts:list[str]|None=None,
+    window_ref:int|None=None,
+    group_name:str|None=None,
 ):    
-    group_names=sorted(dy_state["groups"])
+    if shortcuts is None:
+        shortcuts=[]
+    group_names=[g.name for g in state.groups]
     if len(group_names) == 0:
         notify.warning("There is no group to select for execute")
         sys.exit(1)
 
-    dy_group=None
+    group:Group|None=None
     if group_name is None:
-        dy_group=dy_state["groups"][dy_state["active_group"]]
+        try:
+            group=[g for g in state.groups if g.name == state.active_group][0]
+        except IndexError:
+            raise NotImplementedError()
     else:
         try:
-            dy_group=dy_state["groups"][group_name]
-        except:
+            group=[g for g in state.groups if g.name == group_name][0]
+        except IndexError:
             notify.error("At command execute group name '{}' not found.".format(group_name))
             sys.exit(1)
 
-    dy_win=None
-    if window_id is None:
-        for win_ref in dy_group["windows"]:
-            if active_window_hex_id == dy_group["windows"][win_ref]["hex_id"]:
-                dy_win=dy_group["windows"][win_ref]
-                window_id=win_ref
+    window:Window|None=None
+    if window_ref is None:
+        for win in group.windows:
+            if active_window_hex_id == win.hex_id:
+                window=win
+                window_ref=window.ref
                 break
     else:
         try:
-            dy_win=dy_group["windows"][str(window_id)]
-        except:
-            notify.error("At command execute for group name '{}' window '{}' not found.".format(group_name, window_id))
+            window=[w for w in group.windows if w.ref == window_ref][0]
+        except IndexError:
+            notify.error("At command execute for group name '{}' window '{}' not found.".format(group_name, window_ref))
             sys.exit(1)
 
-    if dy_win is None:
-        print("I am here")
-        win_ref=dy_group["last_window_ref"]
-        Regular_windows.focus(dy_group["windows"][win_ref]["hex_id"])
+    if window is None:
+        win_ref=group.last_window_ref
+        hex_id:str
+        try:
+            hex_id=[w.hex_id for w in group.windows if w.ref == win_ref][0]
+        except IndexError:
+            raise NotImplementedError()
+        XlibHelpers().focus_window(hex_id=hex_id)
     else:
-        group_win_hex_ids=get_group_win_hex_ids(dy_group)
-        for cmd_name in cmd_names:
+        group_win_hex_ids=get_group_win_hex_ids(group)
+        for shortcut in shortcuts:
             cmds=[]
             try:
-                cmds=dy_win["execute"][cmd_name]
-            except:
-                notify.error("At command execute for group name '{}' at window '{}' command '{}' not found".format(group_name, window_id, cmd_name))
+                cmds=[e.commands for e in window.execute if e.shortcut == shortcut][0]
+            except IndexError:
+                notify.error("At command execute for group name '{}' at window '{}' command '{}' not found".format(group_name, window_ref, shortcut))
                 sys.exit(1)
 
             for cmd in cmds:
@@ -122,7 +139,7 @@ def execute(
                         dy_cmd=reg.groupdict()
                         if dy_cmd["cmd"] in ["click", "focus", "send-keys"]:
                             win_hex_id=get_window_hex_id(
-                                dy_group,
+                                group,
                                 active_window_hex_id,
                                 dy_cmd["value"],
                                 group_win_hex_ids,
@@ -130,14 +147,15 @@ def execute(
                             if win_hex_id is not None:
                                 if dy_cmd["cmd"] == "focus":
                                     if win_hex_id != active_window_hex_id:
-                                        Regular_windows.focus(win_hex_id)
+                                        Windows.get_window(hex_id=win_hex_id).focus()
+
                                 elif dy_cmd["cmd"] == "send-keys":
                                     Keyboard(int(win_hex_id, 16)).key(dy_cmd["keys"])
                                 elif dy_cmd["cmd"] == "click":
-                                    Mouse(int(win_hex_id, 16)).click(dy_cmd["keys"])
+                                    Mouse(int(win_hex_id, 16)).click(int(dy_cmd["keys"]))
                         elif dy_cmd["cmd"] == "sleep":
                             time.sleep(float(dy_cmd["value"]))
                         break
 
-        dy_state["last_window_id"]=dy_win["hex_id"]
-        dy_group["last_window_ref"]=str(window_id)
+        state.last_window_id=window.hex_id
+        group.last_window_ref=window_ref
