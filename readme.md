@@ -1,25 +1,49 @@
 
 # Scriptjob Incomplete minimal documentation
 
-```bash
-# Recommended Hotkeys:
-	shiftF1:           | scriptjob --execute shiftF1
-	F3:           | scriptjob --execute F3
-	Shift F3:     | scriptjob --focus --window --active-group --next
-    Alt a:        | scriptjob --focus --group --add
-	Alt f:        | scriptjob --focus --group --toggle
-	Alt Shift f:  | scriptjob --focus --group --next
-    Alt t:        | scriptjob --launch --prompt-group --prompt-windows
+.xbindkeysrc  
+```rcfile
+# ; prompt
+# ; sudo apt-get install zenity
+# ; killall
+# ; sudo apt-get install psmisc
 
-# Command typed often:
-scriptjob --close
-scriptjob --launch --search message
-# line above is equivalent to line below
-scriptjob -l@s=message
-# it works with default variables set in settings: root_dir, default_group, vars_default_sets
-scriptjob --focus --group --add
-scriptjob --fg --add
-scriptjob --focus --group --delete
+# List of modifier:
+#   Release, Control, Shift, Mod1 (Alt), Mod2 (NumLock),
+#   Mod3 (CapsLock), Mod4, Mod5 (Scroll).
+
+"prompt 'Xbindkeys config loaded'"
+    control+shift + q
+
+"killall xbindkeys; xbindkeys && prompt 'Xbindkeys config reloaded'"
+    Mod4 + F3
+
+"/usr/bin/code ~/.xbindkeysrc"
+    Mod4 + Shift + F3
+
+"scriptjob --execute f3"
+    F3
+
+"scriptjob --execute shiftF1"
+    Shift + F1
+
+"scriptjob --focus --window --active-group --next"
+    Shift + F3
+
+"scriptjob --focus --group --add"
+    Mod1 + a
+
+"scriptjob --switch-group"
+    Mod1 + g
+
+"scriptjob --focus --group --next"
+    Mod1 + Shift + f
+
+"scriptjob --focus --group --toggle"
+    Mod1 + f
+
+"scriptjob --launch --prompt-group --prompt-windows"
+    Mod1 + t
 ```
 
 ```bash
@@ -48,11 +72,6 @@ wmctrl -lGpx
     "vars_default_sets": {
         "cmd-dev": "default"
     },
-    "monitors": {
-        "VGA-1": 1,
-        "HDMI-1": 2,
-        "rdp0": 1
-    }
 }
 ```
 
@@ -127,102 +146,139 @@ monitors:
 ```
 
 ```json
-// tmp/s/scriptjob/scriptjob-state-{major_version}-dev.json
+// tmp/s/scriptjob/scriptjob-state-{major_version}.json
 // this file is generated automatically ()
 {
-    "active_group": "message",
+    "active_group": "bwins",
     "focus": {
-        "last_window_id": null,
-        "windows": []
+        "last_window_id": "0x840000c",
+        "windows": [
+            "0x7a0000c",
+            "0x840000c"
+        ]
     },
-    "groups": {
-        "message": {
-            "last_window_ref": "2",
-            "timestamp": 1647525455.9285493,
-            "windows": {
-                "1": {
-                    "execute": {
-                        "f3": [
-                            "focus last"
-                        ],
-                        "shiftF1": [
-                            "focus last"
-                        ]
-                    },
-                    "hex_id": "0x7c00007",
-                    "refs": [],
-                    "timestamp": 1647525456.5545356
-                },
-                "2": {
-                    "execute": {
-                        "f3": [
-                            "send-keys 2 Ctrl+s",
-                            "sleep .05",
-                            "focus 1",
-                            "send-keys 1 Up",
-                            "sleep .05",
-                            "send-keys 1 Return"
-                        ],
-                        "shiftF1": [
-                            "sleep .05",
-                            "send-keys 2 Ctrl+c",
-                            "sleep .3",
-                            "focus 1",
-                            "send-keys 1 Ctrl+Shift+v"
-                        ]
-                    },
-                    "hex_id": "0x620007a",
-                    "refs": [
-                        "1"
+    "groups": [
+        {
+            "last_window_ref": 2,
+            "name": "guitools",
+            "timestamp": 1725568197.9459069,
+            "windows": [
+                {
+                    "execute": [
+                        {
+                            "commands": [
+                                "focus last"
+                            ],
+                            "shortcut": "f3"
+                        },
+                        {
+                            "commands": [
+                                "focus last"
+                            ],
+                            "shortcut": "shiftF1"
+                        }
                     ],
-                    "timestamp": 1647525457.5716422
+                    "hex_id": "0x900000d",
+                    "ref": 1,
+                    "refs": [],
+                    "timestamp": 1725568198.5902817
+                },
+                {
+                    "execute": [
+                        {
+                            "commands": [
+                                "send-keys 2 Ctrl+s",
+                                "sleep .05",
+                                "focus 1",
+                                "send-keys 1 Up",
+                                "sleep .05",
+                                "send-keys 1 Return"
+                            ],
+                            "shortcut": "f3"
+                        },
+                        {
+                            "commands": [
+                                "sleep .05",
+                                "send-keys 2 Ctrl+c",
+                                "sleep .3",
+                                "focus 1",
+                                "send-keys 1 Ctrl+Shift+v",
+                                "sleep .05",
+                                "send-keys 1 Return"
+                            ],
+                            "shortcut": "shiftF1"
+                        }
+                    ],
+                    "hex_id": "0x6e00058",
+                    "ref": 2,
+                    "refs": [
+                        1
+                    ],
+                    "timestamp": 1725568199.523551
                 }
-            }
+            ]
         },
-        "options": {
-            "last_window_ref": "2",
-            "timestamp": 1647525446.5373795,
-            "windows": {
-                "1": {
-                    "execute": {
-                        "f3": [
-                            "focus last"
-                        ],
-                        "shiftF1": [
-                            "focus last"
-                        ]
-                    },
-                    "hex_id": "0x7e00007",
-                    "refs": [],
-                    "timestamp": 1647525447.0468535
-                },
-                "2": {
-                    "execute": {
-                        "f3": [
-                            "send-keys 2 Ctrl+s",
-                            "sleep .05",
-                            "focus 1",
-                            "send-keys 1 Up",
-                            "sleep .05",
-                            "send-keys 1 Return"
-                        ],
-                        "shiftF1": [
-                            "sleep .05",
-                            "send-keys 2 Ctrl+c",
-                            "sleep .3",
-                            "focus 1",
-                            "send-keys 1 Ctrl+Shift+v"
-                        ]
-                    },
-                    "hex_id": "0x6200079",
-                    "refs": [
-                        "1"
+        {
+            "last_window_ref": 2,
+            "name": "bwins",
+            "timestamp": 1725568205.5930552,
+            "windows": [
+                {
+                    "execute": [
+                        {
+                            "commands": [
+                                "focus last"
+                            ],
+                            "shortcut": "f3"
+                        },
+                        {
+                            "commands": [
+                                "focus last"
+                            ],
+                            "shortcut": "shiftF1"
+                        }
                     ],
-                    "timestamp": 1647525447.8824177
+                    "hex_id": "0x920000d",
+                    "ref": 1,
+                    "refs": [],
+                    "timestamp": 1725568206.3183305
+                },
+                {
+                    "execute": [
+                        {
+                            "commands": [
+                                "send-keys 2 Ctrl+s",
+                                "sleep .05",
+                                "focus 1",
+                                "send-keys 1 Up",
+                                "sleep .05",
+                                "send-keys 1 Return"
+                            ],
+                            "shortcut": "f3"
+                        },
+                        {
+                            "commands": [
+                                "sleep .05",
+                                "send-keys 2 Ctrl+c",
+                                "sleep .3",
+                                "focus 1",
+                                "send-keys 1 Ctrl+Shift+v",
+                                "sleep .05",
+                                "send-keys 1 Return"
+                            ],
+                            "shortcut": "shiftF1"
+                        }
+                    ],
+                    "hex_id": "0x6e00059",
+                    "ref": 2,
+                    "refs": [
+                        1
+                    ],
+                    "timestamp": 1725568207.2767572
                 }
-            }
+            ]
         }
-    },
-    "last_window_id": "0x200007"
+    ],
+    "last_window_id": "0x6a0000d"
 }
 ```
