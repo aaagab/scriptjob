@@ -104,9 +104,9 @@ class Session():
             prop = xwin.get_full_property(self.xlib.display.get_atom("_NET_WM_WINDOW_TYPE"), property_type=AnyPropertyType)
             if prop is not None:
                 values=list(prop.value)
-                if WindowType.DESKTOP.value in values:
+                if self.xlib.display.get_atom(WindowType.DESKTOP.value) in values:
                     self.desktop_win_hex_ids.append(hex(window_id))
-                elif WindowType.DOCK.value in values:
+                elif self.xlib.display.get_atom(WindowType.DOCK.value) in values:
                     self.desktop_win_hex_ids.append(hex(window_id))
                 else:
                     win_name:str="unknown"
