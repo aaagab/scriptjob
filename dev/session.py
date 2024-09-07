@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+from pprint import pprint
 import json
 import getpass
 import os
@@ -248,7 +249,7 @@ class Session():
             self.state.focus.last_window_id=self.state.focus.windows[-1]
 
         dy_group_timestamps:dict[float, str]=dict()
-        for group in self.state.groups:
+        for group in self.state.groups.copy():
             dy_window_timestamps:dict[float, int]=dict()
             for window in group.windows.copy():
                 if window.hex_id in self.dy_existing_regular_windows:
@@ -281,7 +282,7 @@ class Session():
 
             if self.state.last_window_id is None:
                 active_group=[g for g in self.state.groups if g.name == self.state.active_group][0]
-                self.state.last_window_id=[w for w in active_group.windows if w.ref == group.last_window_ref][0].hex_id
+                self.state.last_window_id=[w for w in active_group.windows if w.ref == active_group.last_window_ref][0].hex_id
         else:
             self.state.active_group=None
             if self.state.last_window_id is None:
