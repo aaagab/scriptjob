@@ -11,7 +11,7 @@
         "28deaa04-a109-4dd3-9a04-ee896c96af6d|notification|4.0.1|gpm",
         "5d626d01-c4cb-4db1-bf99-02357479ce3c|timeit|1.1.0|gpm"
     ],
-    "description": "Scriptjob is a coding production tool. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Actions are defined in another application called 'scriptjob_actions'. scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (I am using xbindkeys).",
+    "description": "Scriptjob is a coding production tool for X11. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (i.e. xbindkeys).",
     "filen_main": "main.py",
     "gpm_version": "0.2.0",
     "installer": "gpm",
@@ -19,7 +19,7 @@
         "MIT"
     ],
     "name": "scriptjob",
-    "timestamp": 1725732141.0120902,
+    "timestamp": 1748126627.77342,
     "uuid4": "43f5e40b-e7e7-4ee6-b3d9-0c6b1e29e795",
-    "version": "12.0.3"
+    "version": "12.0.4"
 }
