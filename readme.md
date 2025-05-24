@@ -1,5 +1,10 @@
 
-# Scriptjob Incomplete minimal documentation
+# Scriptjob
+
+Scriptjob is a coding production tool for X11. It is close to a windows manager at the difference that it works at a higher level. It gathers windows into groups that are defined by the user. Each window in a group can be set with one or multiple actions. Scriptjob allows to work on multiple coding projects at the same time without being overwhelmed by the number of opened windows. Each setup can be saved in order to be restored later. The commands of this software are intended to be triggered with hotkeys (.i.e xbindkeys).  
+
+
+## Incomplete minimal documentation
 
 .xbindkeysrc  
 ```rcfile
