@@ -9,3 +9,4 @@ __pycache__/
 /.gitattributes
 /todo.txt
 .directory
+nargs-cache.json
